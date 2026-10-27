@@ -64,6 +64,8 @@ fs-archetype-tycoon-keystone = +30% kill credits
 fs-archetype-specialist = Specialist
 fs-archetype-specialist-effect = +3% damage, speed and credits, 3% less damage taken
 fs-archetype-specialist-keystone = +8% damage and credits, +5% speed, 8% less damage taken
+fs-archetype-prism = Prism
+fs-archetype-prism-effect = +4% damage, +6% credits, +3% speed, 4% less damage taken
 
 fs-medievalist-no-guns = Your oath forbids firearms.
 fs-perk-locked = That perk is locked in until the round ends.
