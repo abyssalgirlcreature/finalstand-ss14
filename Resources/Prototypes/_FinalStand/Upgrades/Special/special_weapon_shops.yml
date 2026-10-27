@@ -339,7 +339,7 @@
     - id: xray-self-charge
       name: Resonant Cell
       description: Tuned resonator more than triples self-recharge rate per level.
-      maxLevel: 3
+      maxLevel: 2
       baseCost: 11000
       targetWeaponProtoId: WeaponXrayCannonFS
       requiresResearch: FSOrdnanceXrayCannon
