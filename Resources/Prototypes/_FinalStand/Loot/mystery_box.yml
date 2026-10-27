@@ -64,23 +64,23 @@
   - type: FSMysteryBox
     tiers:
     - pool: FSGachaMisc
-      weight: 15
+      weight: 20
     - pool: FSGachaImprovised
-      weight: 19
+      weight: 25
     - pool: FSGachaSurplus
-      weight: 10
+      weight: 14
     - pool: FSMysteryBoxUncommon
-      weight: 17
+      weight: 13
     - pool: FSGachaJackpot
-      weight: 4
+      weight: 3
     - pool: FSMysteryBoxRare
-      weight: 15
-    - pool: FSMysteryBoxVeryRare
       weight: 11
+    - pool: FSMysteryBoxVeryRare
+      weight: 8
     - pool: FSMysteryBoxReallyRare
-      weight: 5
+      weight: 3
     - pool: FSMysteryBoxWonder
-      weight: 4
+      weight: 3
   - type: Fixtures
     fixtures:
       fix1:
