@@ -30,28 +30,33 @@
     - state: screen_spacevillain
   - type: FSSlotMachine
     payouts:
-    - weight: 8
+    - weight: 3
       multiplier: 25
       message: fs-slots-jackpot
+      popup: LargeCaution
       sound:
         path: /Audio/Machines/vending_jingle.ogg
-    - weight: 20
+    - weight: 12
       multiplier: 8
       message: fs-slots-big
+      popup: Medium
       sound:
         path: /Audio/Machines/chime.ogg
-    - weight: 80
+    - weight: 100
       multiplier: 3
       message: fs-slots-win
+      popup: Small
       sound:
         path: /Audio/Machines/ding.ogg
-    - weight: 170
+    - weight: 250
       multiplier: 1.5
       message: fs-slots-small
+      popup: Small
       sound:
         path: /Audio/Machines/twobeep.ogg
-    - weight: 722
+    - weight: 635
       multiplier: 0
       message: fs-slots-loss
+      popup: SmallCaution
       sound:
         path: /Audio/Machines/buzz-sigh.ogg

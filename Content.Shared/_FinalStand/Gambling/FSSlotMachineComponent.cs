@@ -1,3 +1,4 @@
+using Content.Shared.Popups;
 using Robust.Shared.Audio;
 
 namespace Content.Shared._FinalStand.Gambling;
@@ -34,4 +35,7 @@ public sealed partial class FSSlotPayout
 
     [DataField]
     public SoundSpecifier? Sound;
+
+    [DataField]
+    public PopupType Popup = PopupType.Small;
 }

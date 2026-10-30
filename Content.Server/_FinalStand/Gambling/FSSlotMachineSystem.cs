@@ -65,8 +65,7 @@ public sealed partial class FSSlotMachineSystem : EntitySystem
         if (won > 0)
             _wallet.GiveCredits(mindId, won, earned: false);
 
-        _popup.PopupEntity(Loc.GetString(payout.Message, ("credits", won)), ent, user,
-            won >= stake ? PopupType.Medium : PopupType.SmallCaution);
+        _popup.PopupEntity(Loc.GetString(payout.Message, ("credits", won)), ent, user, payout.Popup);
 
         if (payout.Sound != null)
             _audio.PlayPvs(payout.Sound, ent);
