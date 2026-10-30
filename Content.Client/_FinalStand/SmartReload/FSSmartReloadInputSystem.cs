@@ -25,6 +25,7 @@ public sealed partial class FSSmartReloadInputSystem : EntitySystem
     private static readonly TimeSpan HoldThreshold = TimeSpan.FromMilliseconds(400);
 
     [Dependency] private FSAmmoWheel _ammoWheel = default!;
+    [Dependency] private FSSharedMagazineReloadSystem _magazine = default!;
     [Dependency] private FSThrowableWheel _throwWheel = default!;
 
     private TimeSpan _pressTime;
@@ -120,7 +121,10 @@ public sealed partial class FSSmartReloadInputSystem : EntitySystem
         if (ResolveActiveGun() is not { } gun)
             return;
 
-        RaiseNetworkEvent(new FSSmartReloadMessage { Gun = GetNetEntity(gun) });
+        if (_magazine.IsMagazineFed(gun))
+            RaisePredictiveEvent(new FSReloadRequestEvent { Gun = GetNetEntity(gun) });
+        else
+            RaiseNetworkEvent(new FSSmartReloadMessage { Gun = GetNetEntity(gun) });
     }
 
     private sealed class GunOnlyHandler(FSSmartReloadInputSystem system) : InputCmdHandler

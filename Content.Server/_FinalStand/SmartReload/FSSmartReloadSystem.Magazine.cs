@@ -33,7 +33,8 @@ public sealed partial class FSSmartReloadSystem : EntitySystem
                      && slot!.Item != null;
         var multiplier = GetReloadMultiplier(user, gun);
         var profile = CompOrNull<FSReloadProfileComponent>(gun);
-        var delay  = (hasMag ? MagEjectTime + MagInsertTime : MagInsertTime) * (profile?.TimeMultiplier ?? 1f) * multiplier;
+        var delay  = (hasMag ? FSReloadTimes.MagEject + FSReloadTimes.MagInsert : FSReloadTimes.MagInsert)
+                     * (profile?.TimeMultiplier ?? 1f) * multiplier;
 
         var doAfterArgs = new DoAfterArgs(EntityManager, user, delay,
             new FSMagReloadDoAfterEvent
