@@ -49,7 +49,6 @@ public sealed partial class FSRCDEngineerOnlySystem
     [Dependency] private Content.Shared.Maps.TurfSystem _turf = default!;
     [Dependency] private FSBreachEvaluator _breach = default!;
     [Dependency] private FSCarriedMaterialSystem _materials = default!;
-    [Dependency] private ISharedPlayerManager _player = default!;
     [Dependency] private FSEngineeringResearchSystem _research = default!;
     [Dependency] private FSEngineeringTelemetrySystem _telemetry = default!;
     [Dependency] private FSFlairSystem _flair = default!;
@@ -334,22 +333,7 @@ public sealed partial class FSRCDEngineerOnlySystem
         if (HasComp<FSEmplacementPieceComponent>(target) || HasComp<FSEmplacementComponent>(target))
             return Loc.GetString("fs-emplacement-pack-instead");
 
-        return CanTakeDown(user, target) ? null : Loc.GetString("fs-rcd-not-yours");
-    }
-
-    private bool CanTakeDown(EntityUid user, EntityUid target)
-    {
-        if (!TryComp<FSDeployedByComponent>(target, out var deployedBy)
-            || deployedBy.OwnerMind is not { } owner
-            || _engineering.IsChiefEngineer(user))
-            return true;
-
-        if (_mind.TryGetMind(user, out var mindId, out _) && mindId == owner)
-            return true;
-
-        return !TryComp<MindComponent>(owner, out var ownerMind)
-               || ownerMind.UserId is not { } ownerId
-               || !_player.TryGetSessionById(ownerId, out _);
+        return null;
     }
 
     private List<string> LockedPieces(FSEngineerOnlyRCDComponent comp)
