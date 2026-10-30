@@ -1,4 +1,5 @@
 // Perks that depend on who is being hit, applied on the zombie so bullets, melee and explosions all count.
+using Content.Server._FinalStand.Command;
 using Content.Server._FinalStand.Spawners;
 using Content.Server._FinalStand.Titles;
 using Content.Shared._FinalStand.Mech;
@@ -25,6 +26,7 @@ public sealed partial class FSPerkTargetDamageSystem : EntitySystem
     [Dependency] private FSSmokingKillsSystem _smokingKills = default!;
     [Dependency] private FSAggravatorSystem _aggravator = default!;
     [Dependency] private FSMechPerkScaleSystem _mechScale = default!;
+    [Dependency] private FSSecurityTrainingSystem _securityTraining = default!;
 
     private readonly List<(EntityUid Target, int Level)> _pendingShred = [];
 
@@ -64,6 +66,8 @@ public sealed partial class FSPerkTargetDamageSystem : EntitySystem
 
         if (_mechScale.IsPiloting(attacker))
             mult = FSMechPerkScaleSystem.Reduce(mult);
+
+        mult *= _securityTraining.OutgoingMultiplier(attacker);
 
         if (Math.Abs(mult - 1f) > 0.0001f)
             args.Damage *= mult;
