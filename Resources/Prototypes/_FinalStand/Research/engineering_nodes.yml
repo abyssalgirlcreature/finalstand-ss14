@@ -162,7 +162,7 @@
   cost: 3500
   prerequisites:
   - FSEngineeringQuickSetPlating
-  bonusDescription: Deconstructing refunds 75% instead of 50%.
+  bonusDescription: Deconstructing refunds full materials even from a wrecked structure.
 
 - type: fsTechNode
   id: FSEngineeringRazorCoil

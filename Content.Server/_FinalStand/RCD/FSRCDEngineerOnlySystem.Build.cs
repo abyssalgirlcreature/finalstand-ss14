@@ -56,8 +56,6 @@ public sealed partial class FSRCDEngineerOnlySystem
 
     private static readonly ProtoId<FSParticleEmitterPrototype> DustPuff = "FSDustPuff";
 
-    private const float RefundFraction = 0.5f;
-    private const float SalvageRefundFraction = 0.75f;
     private static readonly SoundSpecifier PlacedSound = new SoundPathSpecifier("/Audio/Effects/thunk.ogg", AudioParams.Default.WithVariation(0.1f));
     private const float RapidAssemblyMultiplier = 0.75f;
     private const float ChiefCapMultiplier = 1.5f;
@@ -392,15 +390,15 @@ public sealed partial class FSRCDEngineerOnlySystem
             return null;
 
         var health = 1f;
-        if (_destructible.TryGetDestroyedAt(target, out var destroyedAt) && destroyedAt > 0
+        if (!_research.Has(FSEngineeringNodes.SalvagePlating)
+            && _destructible.TryGetDestroyedAt(target, out var destroyedAt) && destroyedAt > 0
             && TryComp<DamageableComponent>(target, out var damageable))
             health = Math.Clamp(1f - (damageable.TotalDamage / destroyedAt.Value).Float(), 0f, 1f);
 
-        var fraction = _research.Has(FSEngineeringNodes.SalvagePlating) ? SalvageRefundFraction : RefundFraction;
         var refund = new Dictionary<ProtoId<StackPrototype>, int>();
         foreach (var (material, count) in recipe.Materials)
         {
-            var amount = (int) MathF.Floor(count * health * fraction);
+            var amount = (int) MathF.Floor(count * health);
             if (amount > 0)
                 refund[material] = amount;
         }
