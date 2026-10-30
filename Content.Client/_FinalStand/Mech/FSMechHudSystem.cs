@@ -27,6 +27,7 @@ public sealed partial class FSMechHudSystem : EntitySystem
     [Dependency] private SharedCombatModeSystem _combat = default!;
 
     public const int WeaponKeys = 3;
+    public const int MeleeIndex = WeaponKeys;
 
     private FSMechHudOverlay _overlay = default!;
     private FSMechCombatButton? _button;
@@ -41,6 +42,7 @@ public sealed partial class FSMechHudSystem : EntitySystem
         var builder = CommandBinds.Builder;
         for (var i = 0; i < WeaponKeys; i++)
             builder = builder.BindBefore(keys[i], new PilotOnlyHandler(this, i), typeof(ActionUIController));
+        builder = builder.BindBefore(ContentKeyFunctions.Hotbar4, new PilotOnlyHandler(this, MeleeIndex), typeof(ActionUIController));
         builder.Register<FSMechHudSystem>();
     }
 
@@ -89,7 +91,16 @@ public sealed partial class FSMechHudSystem : EntitySystem
 
     public void SelectWeapon(int index)
     {
-        if (Piloted() is not { } mech || index >= mech.Comp.EquipmentContainer.ContainedEntities.Count)
+        if (Piloted() is not { } mech)
+            return;
+
+        if (index == MeleeIndex)
+        {
+            RaisePredictiveEvent(new FSMechSelectWeaponEvent(NetEntity.Invalid));
+            return;
+        }
+
+        if (index >= mech.Comp.EquipmentContainer.ContainedEntities.Count)
             return;
 
         RaisePredictiveEvent(new FSMechSelectWeaponEvent(GetNetEntity(mech.Comp.EquipmentContainer.ContainedEntities[index])));

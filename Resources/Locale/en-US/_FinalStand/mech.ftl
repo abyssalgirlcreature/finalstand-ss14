@@ -61,6 +61,7 @@ fs-mech-hud-power = POWER
 fs-mech-hud-siege = SIEGE
 fs-mech-hud-combat-on = COMBAT ON
 fs-mech-hud-combat-off = COMBAT OFF
+fs-mech-hud-melee = FISTS
 fs-mech-hud-online = SYSTEMS ONLINE
 fs-mech-hud-breached = HULL BREACHED · BAIL OUT
 fs-mech-hud-lost = MECH LOST

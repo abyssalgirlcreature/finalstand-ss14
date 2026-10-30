@@ -24,11 +24,23 @@ public sealed partial class FSMechWeaponSelectSystem : EntitySystem
             || !TryGetPilotMech(pilot, out var vehicle, out var mech))
             return;
 
+        var toggles = EnsureComp<FSMechWeaponTogglesComponent>(vehicle);
+        if (ev.Weapon == NetEntity.Invalid)
+        {
+            foreach (var equipment in mech.EquipmentContainer.ContainedEntities)
+                toggles.Disabled.Add(equipment);
+
+            mech.CurrentSelectedEquipment = null;
+            Dirty(vehicle, toggles);
+            Dirty(vehicle, mech);
+            _audio.PlayPredicted(SelectSound, vehicle, pilot);
+            return;
+        }
+
         var weapon = GetEntity(ev.Weapon);
         if (!mech.EquipmentContainer.Contains(weapon))
             return;
 
-        var toggles = EnsureComp<FSMechWeaponTogglesComponent>(vehicle);
         if (toggles.Disabled.Remove(weapon))
         {
             mech.CurrentSelectedEquipment = weapon;
