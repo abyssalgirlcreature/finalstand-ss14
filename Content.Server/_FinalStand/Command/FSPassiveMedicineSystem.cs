@@ -14,7 +14,7 @@ public sealed partial class FSPassiveMedicineSystem : EntitySystem
     [Dependency] private IGameTiming _timing = default!;
     [Dependency] private MobStateSystem _mobState = default!;
 
-    private static readonly TimeSpan TickInterval = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan TickInterval = TimeSpan.FromSeconds(FSCommandAuraRules.PassiveMedicineSeconds);
 
     private TimeSpan _nextTick;
 
@@ -26,7 +26,7 @@ public sealed partial class FSPassiveMedicineSystem : EntitySystem
             return;
         _nextTick = _timing.CurTime + TickInterval;
 
-        var heal = FixedPoint2.New(-FSCommandAuraRules.PassiveMedicineHealPerSecond);
+        var heal = FixedPoint2.New(-FSCommandAuraRules.PassiveMedicineHeal);
         var query = EntityQueryEnumerator<FSCommandAuraBuffComponent, DamageableComponent>();
         while (query.MoveNext(out var uid, out var buff, out var damageable))
         {
