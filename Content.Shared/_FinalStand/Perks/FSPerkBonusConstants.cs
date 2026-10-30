@@ -12,6 +12,7 @@ public static class FSPerkBonusConstants
     public const float DeathAuraPerStack = 0.02f;       // ranged and melee
     public const float PacifistPenalty = 0.25f;         // flat outgoing-damage penalty, ranged and melee
     public const float LegBreakerStaminaPerLevel = 25f; // stamina damage to the target on crit
+    public const float MechPerkScale = 0.5f;            // how much of a perk's effect carries into a piloted mech
 
     public const float JuggernaughtPerLevel = 0.15f;         // vs. wave-zombie-sourced damage only
     public const float SwordAndShieldResistPerLevel = 0.12f; // while wielding melee, not also a gun
