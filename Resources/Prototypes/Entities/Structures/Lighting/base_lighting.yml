@@ -36,7 +36,7 @@
     offset: "0, 0.495"
   - type: Damageable
     damageModifierSet: Metallic
-  - type: FSPlayerDamageImmune
+  - type: FSBrokenLight
   - type: Injurable
     damageContainer: Inorganic
   - type: RCDDeconstructable
@@ -77,7 +77,6 @@
     - map: ["enum.PoweredLightLayers.Glow"]
       state: glow
       shader: unshaded
-  - type: FSBrokenLight
 
 - type: entity
   name: light
@@ -269,7 +268,6 @@
           - None
           layer:
           - TabletopMachineLayer
-    - type: FSBrokenLight
     - type: Construction
       graph: LightFixture
       node: bulbLight

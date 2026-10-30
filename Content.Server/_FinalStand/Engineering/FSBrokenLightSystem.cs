@@ -1,6 +1,7 @@
 using Content.Server._FinalStand.Effects;
 using Content.Shared._FinalStand.Engineering;
 using Content.Shared._FinalStand.Particles;
+using Content.Shared.Damage.Systems;
 using Content.Shared.Interaction;
 using Content.Shared.Light.Components;
 using Content.Shared.Light.EntitySystems;
@@ -14,6 +15,7 @@ namespace Content.Server._FinalStand.Engineering;
 
 public sealed partial class FSBrokenLightSystem : EntitySystem
 {
+    [Dependency] private DamageableSystem _damageable = default!;
     [Dependency] private FSFlairSystem _flair = default!;
     [Dependency] private IGameTiming _timing = default!;
     [Dependency] private PointLightSystem _pointLight = default!;
@@ -61,6 +63,7 @@ public sealed partial class FSBrokenLightSystem : EntitySystem
             return;
 
         _bulb.SetState(bulb, LightBulbState.Normal);
+        _damageable.ClearAllDamage(ent.Owner);
         ent.Comp.Glowing = false;
         _poweredLight.SetState(ent.Owner, light.On, light);
         _popup.PopupEntity(Loc.GetString("fs-light-repaired"), ent, args.User);
