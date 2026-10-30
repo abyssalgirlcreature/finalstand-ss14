@@ -49,8 +49,6 @@ public sealed partial class FSSmartReloadSystem : EntitySystem
 
     private readonly Dictionary<EntityUid, DoAfterId> _activeChamberFills = new();
 
-    private static readonly TimeSpan MagEjectTime    = TimeSpan.FromSeconds(0.25);
-    private static readonly TimeSpan MagInsertTime   = TimeSpan.FromSeconds(0.55);
     private static readonly TimeSpan ShellInsertTime = TimeSpan.FromSeconds(0.55);
     private static readonly TimeSpan ChamberFillTime = TimeSpan.FromSeconds(0.45);
 
@@ -163,7 +161,7 @@ public sealed partial class FSSmartReloadSystem : EntitySystem
         ReloadMagazine(gun, user, chosen: chosen);
     }
 
-    private float GetReloadMultiplier(EntityUid user, EntityUid gun)
+    public float GetReloadMultiplier(EntityUid user, EntityUid gun)
     {
         var mult = _bloodload.GetReloadTimeMultiplier(user) * _speedload.GetReloadTimeMultiplier(user)
                    * _wolfPack.GetReloadTimeMultiplier(user);
