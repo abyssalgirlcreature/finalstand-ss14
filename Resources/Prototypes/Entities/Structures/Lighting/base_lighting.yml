@@ -56,18 +56,6 @@
         - None
         layer:
         - TabletopMachineLayer
-  - type: Destructible
-    thresholds:
-    - trigger:
-        !type:DamageTrigger
-        damage: 50
-      behaviors:
-      - !type:EmptyAllContainersBehaviour
-      - !type:DoActsBehavior
-        acts: [ "Destruction" ]
-      - !type:PlaySoundBehavior
-        sound:
-          collection: GlassBreak
   - type: PlacementReplacement
     key: lights
 
@@ -89,17 +77,7 @@
     - map: ["enum.PoweredLightLayers.Glow"]
       state: glow
       shader: unshaded
-  - type: Destructible
-    thresholds:
-    - trigger:
-        !type:DamageTrigger
-        damage: 50
-      behaviors:
-      - !type:SpawnEntitiesBehavior
-        spawn:
-          SheetSteel1:
-            min: 2
-            max: 2
+  - type: FSBrokenLight
 
 - type: entity
   name: light
@@ -291,17 +269,7 @@
           - None
           layer:
           - TabletopMachineLayer
-    - type: Destructible
-      thresholds:
-      - trigger:
-          !type:DamageTrigger
-          damage: 50
-        behaviors:
-        - !type:SpawnEntitiesBehavior
-          spawn:
-            SheetSteel1:
-              min: 1
-              max: 1
+    - type: FSBrokenLight
     - type: Construction
       graph: LightFixture
       node: bulbLight
@@ -475,20 +443,6 @@
   - type: Construction
     graph: LightFixture
     node: emergencyLight
-  - type: Destructible
-    thresholds:
-    - trigger:
-        !type:DamageTrigger
-        damage: 50
-      behaviors:
-      - !type:SpawnEntitiesBehavior
-        spawn:
-          SheetSteel1:
-            min: 1
-            max: 1
-          ShardGlass:
-            min: 1
-            max: 1
 
 #Coloured lights
 
