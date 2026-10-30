@@ -47,6 +47,7 @@ public sealed partial class FSTransmogSystem : EntitySystem
         }
 
         Dirty(args.Performer, transmog);
+        _actions.SetToggled((args.Action.Owner, args.Action.Comp), hide);
         _popup.PopupEntity(Loc.GetString(hide ? "fs-transmog-hidden" : "fs-transmog-shown"),
             args.Performer, args.Performer);
     }

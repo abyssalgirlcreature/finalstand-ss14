@@ -8,9 +8,13 @@
     useDelay: 1
     checkCanInteract: false
   - type: Sprite
-    sprite: Clothing/OuterClothing/Armor/bulletproof.rsi
     layers:
-    - state: icon
+    - sprite: Clothing/OuterClothing/Armor/bulletproof.rsi
+      state: icon
       map: ["enum.ActionVisuals.Icon"]
+    - sprite: Clothing/Uniforms/Jumpskirt/capformaldress.rsi
+      state: icon
+      map: ["enum.ActionVisuals.IconToggled"]
+      visible: false
   - type: InstantAction
     event: !type:FSTransmogActionEvent {}
