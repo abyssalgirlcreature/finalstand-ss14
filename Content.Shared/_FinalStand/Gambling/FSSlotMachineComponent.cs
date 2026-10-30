@@ -6,7 +6,7 @@ namespace Content.Shared._FinalStand.Gambling;
 public sealed partial class FSSlotMachineComponent : Component
 {
     [DataField]
-    public List<int> Stakes = [1000, 10000, 50000];
+    public List<int> Stakes = new() { 1000, 10000, 50000 };
 
     [DataField]
     public List<FSSlotPayout> Payouts = new();
