@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "license": "CC-BY-SA-3.0",
+  "copyright": "Cropped from the Broadsword mech sprite, itself from Monolith-Station (https://github.com/Monolith-Station/Monolith), based on tgstation mecha art",
+  "size": {
+    "x": 32,
+    "y": 32
+  },
+  "states": [
+    {
+      "name": "fist"
+    }
+  ]
+}

@@ -134,3 +134,18 @@
   - type: Battery
     maxCharge: 4320
     startingCharge: 4320
+
+- type: entity
+  id: FSEffectMechFist
+  name: driven fist
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Transform
+    anchored: true
+  - type: Sprite
+    drawdepth: Mobs
+    scale: 2.0,2.0
+    sprite: _FinalStand/Effects/BroadswordFist.rsi
+    state: fist
+  - type: TimedDespawn
+    lifetime: 0.3
