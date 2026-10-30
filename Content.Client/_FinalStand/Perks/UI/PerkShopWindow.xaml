@@ -114,5 +114,9 @@
 
         </BoxContainer>
 
+        <BoxContainer Name="TitlesTab" Orientation="Vertical" HorizontalExpand="True" VerticalExpand="True" />
+
+        <BoxContainer Name="MentorTab" Orientation="Vertical" HorizontalExpand="True" VerticalExpand="True" />
+
     </TabContainer>
 </controls:FancyWindow>

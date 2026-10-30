@@ -1,7 +1,9 @@
+using Content.Client._FinalStand.Interface;
 using Content.Client._FinalStand.Perks.UI;
 using Content.Shared._FinalStand.Perks;
 using Content.Shared._FinalStand.Economy;
 using Content.Shared._FinalStand.Leveling;
+using Content.Shared._FinalStand.Titles;
 using Robust.Client.Player;
 
 namespace Content.Client._FinalStand.Perks;
@@ -10,6 +12,7 @@ public sealed partial class FSPerkShopSystem : EntitySystem
 {
     [Dependency] private IPlayerManager _player = default!;
     [Dependency] private FSPerkShopAccessSystem _shopAccess = default!;
+    [Dependency] private FSUiEventRelaySystem _relay = default!;
 
     private PerkShopWindow? _window;
     private FSPerksStateEvent? _cachedState;
@@ -23,6 +26,9 @@ public sealed partial class FSPerkShopSystem : EntitySystem
         SubscribeNetworkEvent<FSLevelingUpdatedEvent>(OnLevelingUpdated);
         SubscribeNetworkEvent<WalletUpdatedEvent>(OnWalletUpdated);
         SubscribeNetworkEvent<FSOpenPerkShopEvent>(_ => OpenWindow());
+
+        _relay.TitlesUpdated += OnTitlesState;
+        _relay.MentorUpdated += OnMentorState;
     }
 
     public override void FrameUpdate(float frameTime)
@@ -51,6 +57,12 @@ public sealed partial class FSPerkShopSystem : EntitySystem
                 RaiseNetworkEvent(new FSRespecPerkMessage());
             _window.OnPrestigeRequested += () =>
                 RaiseNetworkEvent(new FSPrestigeRequestMessage());
+            _window.OnEquipTitle += title =>
+                RaiseNetworkEvent(new FSTitleEquipEvent { Title = title });
+            _window.OnBuyMentor += item =>
+                RaiseNetworkEvent(new FSMentorBuyEvent { Item = item });
+            _window.OnTitlesRequested += () => RaiseNetworkEvent(new FSTitlesRequestEvent());
+            _window.OnMentorRequested += () => RaiseNetworkEvent(new FSMentorRequestEvent());
 
             if (_cachedState != null)
                 _window.UpdateState(_cachedState);
@@ -67,6 +79,18 @@ public sealed partial class FSPerkShopSystem : EntitySystem
         _cachedState = ev;
         if (_window is { Disposed: false, IsOpen: true })
             _window.UpdateState(ev);
+    }
+
+    private void OnTitlesState(FSTitlesStateEvent ev)
+    {
+        if (_window is { Disposed: false, IsOpen: true })
+            _window.UpdateTitles(ev);
+    }
+
+    private void OnMentorState(FSMentorStateEvent ev)
+    {
+        if (_window is { Disposed: false, IsOpen: true })
+            _window.UpdateMentor(ev);
     }
 
     private void OnLevelingUpdated(FSLevelingUpdatedEvent ev)
