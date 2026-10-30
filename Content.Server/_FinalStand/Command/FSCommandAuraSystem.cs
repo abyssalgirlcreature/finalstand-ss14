@@ -67,7 +67,7 @@ public sealed partial class FSCommandAuraSystem : EntitySystem
         var sources = EntityQueryEnumerator<ActorComponent>();
         while (sources.MoveNext(out var uid, out _))
         {
-            if (_mobState.IsDead(uid)
+            if (!_mobState.IsAlive(uid)
                 || !_mind.TryGetMind(uid, out var mindId, out _)
                 || !_jobs.MindTryGetJob(mindId, out var job)
                 || !ByJob.TryGetValue(job.ID, out var entry))
@@ -101,6 +101,11 @@ public sealed partial class FSCommandAuraSystem : EntitySystem
         _players.Clear();
         _lookup.GetEntitiesInRange(pos, radius, _players);
         foreach (var (uid, _) in _players)
+        {
+            if (uid == source && aura == FSCommandAura.DownWithTheShip)
+                continue;
+
             EnsureComp<FSCommandAuraBuffComponent>(uid).Sources[aura] = sourceMind;
+        }
     }
 }
