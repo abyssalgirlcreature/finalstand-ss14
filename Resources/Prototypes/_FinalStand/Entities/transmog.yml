@@ -1,0 +1,16 @@
+- type: entity
+  parent: BaseAction
+  id: FSTransmogAction
+  name: Hide Armour
+  description: Hides your armour and helmet so the clothes underneath show. Protection is unaffected.
+  components:
+  - type: Action
+    useDelay: 1
+    checkCanInteract: false
+  - type: Sprite
+    sprite: Clothing/OuterClothing/Armor/bulletproof.rsi
+    layers:
+    - state: icon
+      map: ["enum.ActionVisuals.Icon"]
+  - type: InstantAction
+    event: !type:FSTransmogActionEvent {}
