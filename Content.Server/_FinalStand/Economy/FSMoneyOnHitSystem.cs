@@ -1,3 +1,4 @@
+using Content.Server._FinalStand.Command;
 using Content.Server._FinalStand.Deployables;
 using Content.Server._FinalStand.GameTicking.Rules;
 using Content.Server._FinalStand.Perks;
@@ -17,6 +18,7 @@ namespace Content.Server._FinalStand.Economy;
 public sealed partial class FSMoneyOnHitSystem : EntitySystem
 {
     [Dependency] private FSPlayerWalletSystem _wallet = default!;
+    [Dependency] private FSProfitMarginSystem _profitMargin = default!;
     [Dependency] private SharedMindSystem _mind = default!;
     [Dependency] private SharedHandsSystem _hands = default!;
     [Dependency] private MobStateSystem _mobState = default!;
@@ -95,6 +97,6 @@ public sealed partial class FSMoneyOnHitSystem : EntitySystem
 
         var give = Math.Min(payout, max - alreadyGiven);
         cap.MoneyGivenPerPlayer[mindId] = alreadyGiven + give;
-        _wallet.GiveCredits(mindId, give);
+        _wallet.GiveCredits(mindId, (int) MathF.Round(give * _profitMargin.Multiplier(args.Origin.Value)));
     }
 }

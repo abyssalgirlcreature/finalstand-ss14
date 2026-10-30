@@ -1,4 +1,5 @@
 ﻿using Content.Server._FinalStand.Cleanup;
+using Content.Server._FinalStand.Command;
 using Content.Server._FinalStand.Economy;
 using Content.Server._FinalStand.FriendlyFire;
 using Content.Shared.Damage.Systems;
@@ -48,6 +49,7 @@ public sealed partial class WaveGameRuleSystem : GameRuleSystem<WaveGameRuleComp
 {
     [Dependency] private IPlayerManager _playerManager = default!;
     [Dependency] private FSTitleBuffSystem _titleBuffs = default!;
+    [Dependency] private FSProfitMarginSystem _profitMargin = default!;
     [Dependency] private IChatManager _chatManager = default!;
     [Dependency] private SharedAudioSystem _audio = default!;
     [Dependency] private FSPlayerWalletSystem _wallet = default!;
@@ -610,7 +612,7 @@ public sealed partial class WaveGameRuleSystem : GameRuleSystem<WaveGameRuleComp
             killerMind = mindId;
             var weaponBonus = TryComp<FSPendingKillBonusComponent>(ent.Owner, out var pending) ? 1f + pending.MoneyPercent : 1f;
             _wallet.GiveCredits(mindId, (int) (killCredits * weaponBonus * _style.KillMoneyMultiplier(args.Origin.Value, ent.Owner) * _archetypes.Bonus(mindId).Credits
-                * _titleBuffs.ForMind(mindId).KillCredits));
+                * _titleBuffs.ForMind(mindId).KillCredits * _profitMargin.Multiplier(args.Origin.Value)));
 
             if (IsSecurityRole(mindId))
                 _wallet.GiveCredits(mindId, comp.SecKillBonus);
