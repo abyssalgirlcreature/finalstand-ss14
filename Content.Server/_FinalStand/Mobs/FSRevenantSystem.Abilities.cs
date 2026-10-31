@@ -33,13 +33,11 @@ public sealed partial class FSRevenantSystem
         return landed.GetTotal().Float();
     }
 
+    // Not wave-scaled: a combo holds its victim for every hit, and scaled hits killed inside the grab from wave 20 on.
     private float ApplyAbilityDamage(EntityUid uid, FSRevenantComponent comp, EntityUid target, float amount)
     {
-        return DealSlash(target, amount * GetDamageScale(uid), comp.ResistanceBypass, uid);
+        return DealSlash(target, amount, comp.ResistanceBypass, uid);
     }
-
-    private float GetDamageScale(EntityUid uid)
-        => TryComp<FSWaveDamageScaleComponent>(uid, out var scale) ? scale.MeleeDamageMultiplier : 1f;
 
     private bool TryExecute(EntityUid uid, FSRevenantComponent comp)
     {
@@ -338,7 +336,7 @@ public sealed partial class FSRevenantSystem
             _transform.SetWorldRotation(bolt, new Angle(angle));
             if (TryComp<FSRevenantBoltComponent>(bolt, out var boltComp))
             {
-                boltComp.Damage = comp.BoltDamage * GetDamageScale(uid);
+                boltComp.Damage = comp.BoltDamage;
                 boltComp.ResistanceBypass = comp.ResistanceBypass;
                 boltComp.Shooter = uid;
             }
