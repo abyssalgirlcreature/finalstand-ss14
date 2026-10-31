@@ -37,8 +37,8 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
     // Flames leave this far in front of the zombie and are this thick; a wall stops their centre a radius short.
     private const float FlameOffset = 0.3f;
     private const float FlameRadius = 0.1f;
-    // Anything this close to a flame's path catches.
-    private const float HitRadius = 0.5f;
+    // Anything this close to a flame's path catches; kept close to the drawn fire, so what burns you is what you see.
+    private const float HitRadius = 0.25f;
     private const float CheckInterval = 0.05f;
 
     // Flames stop at whatever a projectile on the Impassable mask would have hit: walls, windows, shut doors.
