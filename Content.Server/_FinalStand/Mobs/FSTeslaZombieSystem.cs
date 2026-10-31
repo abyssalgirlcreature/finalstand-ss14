@@ -102,7 +102,7 @@ public sealed partial class FSTeslaZombieSystem : EntitySystem
         var myPos = _transform.GetMapCoordinates(uid);
         var dir = _transform.GetMapCoordinates(target).Position - myPos.Position;
         if (dir != Vector2.Zero)
-            _transform.SetWorldRotation(uid, new Angle(dir) - MathF.PI / 2f);
+            _transform.SetWorldRotation(uid, dir.ToWorldAngle());
 
         comp.IsFiring = true;
         comp.Target = target;

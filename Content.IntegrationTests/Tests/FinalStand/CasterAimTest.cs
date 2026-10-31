@@ -15,8 +15,8 @@ using Robust.Shared.Player;
 namespace Content.IntegrationTests.Tests.FinalStand;
 
 // Clients draw a flamer's fire along the way the zombie faces, while the server burns along its aim. The two came
-// apart in two ways: anything that rechecked whether the mob could move (a knockback ending, a stun) let it walk
-// mid-attack and turn to face where it went, and the aim was set as a grid-relative rotation, wrong on a rotated grid.
+// apart when anything that rechecked whether the mob could move (a knockback ending, a stun) let it walk mid-attack
+// and turn to face where it went. The aim is a world rotation too, so a rotated grid doesn't turn it.
 [TestFixture]
 public sealed class CasterAimTest : GameTest
 {
@@ -119,8 +119,8 @@ public sealed class CasterAimTest : GameTest
         await Server.WaitAssertion(() =>
         {
             var aim = entMan.GetComponent<FSFlamethrowerComponent>(flamer).FiringDirection;
-            // A mob's local up is the way it faces.
-            var facing = xforms.GetWorldRotation(flamer).RotateVec(Vector2.UnitY);
+            // A mob faces along its local south, as its sprite and the mover have it.
+            var facing = xforms.GetWorldRotation(flamer).ToWorldVec();
             Assert.That(Vector2.Dot(facing, aim), Is.GreaterThan(0.95f), $"faces {facing} but aims {aim}");
         });
     }

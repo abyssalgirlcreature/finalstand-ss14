@@ -74,6 +74,7 @@ public sealed class FlamethrowerVisualsTest : GameTest
             var count = 0;
             var furthest = float.MinValue;
             var fastest = 0f;
+            var heading = Vector2.Zero;
             for (var i = 0; i < particles.ParticleCount; i++)
             {
                 ref var p = ref particles.Particles[i];
@@ -83,7 +84,11 @@ public sealed class FlamethrowerVisualsTest : GameTest
                 count++;
                 furthest = MathF.Max(furthest, p.Position.X);
                 fastest = MathF.Max(fastest, p.Velocity.Length());
+                heading += p.Velocity;
             }
+
+            // The sprite faces the way a mob's local south points; the fire and the zombie both turn to the target.
+            var facing = cEntMan.System<SharedTransformSystem>().GetWorldRotation(clientFlamer).ToWorldVec();
 
             Assert.Multiple(() =>
             {
@@ -92,6 +97,9 @@ public sealed class FlamethrowerVisualsTest : GameTest
                 Assert.That(furthest, Is.LessThanOrEqualTo(WallFace), "flame particles went into the wall");
                 // The particles in flight move at the flamer's own flame speed, so they reach as far as its fire.
                 Assert.That(fastest, Is.InRange(flameSpeed * 0.9f, flameSpeed * 1.1f), "flame particles don't match the flamer's speed");
+                Assert.That(Vector2.Dot(Vector2.Normalize(heading), Vector2.UnitX), Is.GreaterThan(0.95f),
+                    "the flames don't go where the flamer aims");
+                Assert.That(Vector2.Dot(facing, Vector2.UnitX), Is.GreaterThan(0.95f), "the flamer faces away from its fire");
             });
         });
     }

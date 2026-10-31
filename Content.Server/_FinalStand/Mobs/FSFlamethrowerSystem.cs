@@ -120,7 +120,7 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
         if (dir != Vector2.Zero)
         {
             comp.FiringDirection = Vector2.Normalize(dir);
-            _transform.SetWorldRotation(uid, new Angle(dir) - MathF.PI / 2f);
+            _transform.SetWorldRotation(uid, dir.ToWorldAngle());
         }
 
         comp.IsWindingUp = true;
@@ -212,7 +212,7 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
         var newAngle = currentAngle + step;
 
         comp.FiringDirection = new Vector2(MathF.Cos(newAngle), MathF.Sin(newAngle));
-        _transform.SetWorldRotation(uid, new Angle(comp.FiringDirection) - MathF.PI / 2f);
+        _transform.SetWorldRotation(uid, comp.FiringDirection.ToWorldAngle());
     }
 
     private bool IsTrackable(EntityUid uid, FSFlamethrowerComponent comp, EntityUid? target, Vector2 worldPos)
