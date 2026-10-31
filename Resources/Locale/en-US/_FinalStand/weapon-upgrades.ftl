@@ -510,7 +510,7 @@ fs-upgrade-fireaxe-wildfire = Wildfire
 fs-upgrade-fireaxe-wildfire-desc = Burning zombies the axe kills burst into flame, setting zombies within 2 tiles alight.
 
 fs-upgrade-fireaxe-aftershock = Aftershock
-fs-upgrade-fireaxe-aftershock-desc = A fully charged slam strikes again a moment later, half as hard and half again as wide.
+fs-upgrade-fireaxe-aftershock-desc = A fully charged slam strikes again a moment later, half as hard and half again as wide. Each zombie it reaches past the nearest takes 25% less than the one before, down to a quarter.
 
 fs-upgrade-halberd-honed = Honed Edge
 fs-upgrade-halberd-honed-desc = +90% damage per level.
