@@ -4,10 +4,11 @@ using Content.Server._FinalStand.Spawners;
 using Content.Server.Atmos.EntitySystems;
 using Content.Server.NPC.HTN;
 using Content.Shared._FinalStand.Mobs;
+using Content.Shared.ActionBlocker;
 using Content.Shared.Atmos.Components;
 using Content.Shared.Mobs;
 using Content.Shared.Mobs.Components;
-using Content.Shared.Movement.Components;
+using Content.Shared.Movement.Events;
 using Content.Shared.Physics;
 using Robust.Server.GameObjects;
 using Robust.Shared.Audio.Systems;
@@ -28,6 +29,7 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
     [Dependency] private RayCastSystem _rayCast = default!;
     [Dependency] private EntityLookupSystem _lookup = default!;
     [Dependency] private FlammableSystem _flammable = default!;
+    [Dependency] private ActionBlockerSystem _blocker = default!;
     [Dependency] private FSInjuryRulesSystem _injuryRules = default!;
 
     private const float AcquireInterval = 0.25f;
@@ -48,6 +50,15 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
     {
         base.Initialize();
         SubscribeLocalEvent<FSFlamethrowerComponent, ComponentShutdown>(OnShutdown);
+        SubscribeLocalEvent<FSFlamethrowerComponent, UpdateCanMoveEvent>(OnUpdateCanMove);
+    }
+
+    // Held still while attacking; a direct CanMove write would be undone by the next movement recheck (a knockback
+    // ending, a stun), and walking turns the mob away from its aim.
+    private void OnUpdateCanMove(Entity<FSFlamethrowerComponent> ent, ref UpdateCanMoveEvent args)
+    {
+        if (ent.Comp.LifeStage <= ComponentLifeStage.Running && (ent.Comp.IsWindingUp || ent.Comp.IsFiring))
+            args.Cancel();
     }
 
     private void OnShutdown(EntityUid uid, FSFlamethrowerComponent comp, ComponentShutdown args)
@@ -109,7 +120,7 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
         if (dir != Vector2.Zero)
         {
             comp.FiringDirection = Vector2.Normalize(dir);
-            _transform.SetLocalRotation(uid, new Angle(dir) - MathF.PI / 2f);
+            _transform.SetWorldRotation(uid, new Angle(dir) - MathF.PI / 2f);
         }
 
         comp.IsWindingUp = true;
@@ -117,11 +128,7 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
         Dirty(uid, comp);
         _pointLight.SetEnabled(uid, true);
 
-        if (TryComp<InputMoverComponent>(uid, out var mover))
-        {
-            mover.CanMove = false;
-            Dirty(uid, mover);
-        }
+        _blocker.UpdateCanMove(uid);
     }
 
     private void UpdateWindup(EntityUid uid, FSFlamethrowerComponent comp, float frameTime)
@@ -152,11 +159,7 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
         comp.WindupAccumulator = 0f;
         Dirty(uid, comp);
         _pointLight.SetEnabled(uid, false);
-        if (TryComp<InputMoverComponent>(uid, out var mover))
-        {
-            mover.CanMove = true;
-            Dirty(uid, mover);
-        }
+        _blocker.UpdateCanMove(uid);
     }
 
     private void UpdateFiring(EntityUid uid, FSFlamethrowerComponent comp, float frameTime)
@@ -209,7 +212,7 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
         var newAngle = currentAngle + step;
 
         comp.FiringDirection = new Vector2(MathF.Cos(newAngle), MathF.Sin(newAngle));
-        _transform.SetLocalRotation(uid, new Angle(comp.FiringDirection) - MathF.PI / 2f);
+        _transform.SetWorldRotation(uid, new Angle(comp.FiringDirection) - MathF.PI / 2f);
     }
 
     private bool IsTrackable(EntityUid uid, FSFlamethrowerComponent comp, EntityUid? target, Vector2 worldPos)
@@ -378,11 +381,7 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
 
         _audio.Stop(comp.FireSoundEntity);
         comp.FireSoundEntity = null;
-        if (TryComp<InputMoverComponent>(uid, out var mover))
-        {
-            mover.CanMove = true;
-            Dirty(uid, mover);
-        }
+        _blocker.UpdateCanMove(uid);
 
         if (TryComp<HTNComponent>(uid, out var htn))
             _htn.Replan(htn);

@@ -6,13 +6,14 @@ using Content.Server._FinalStand.Spawners;
 using Content.Server.NPC.HTN;
 using Content.Shared._FinalStand.FriendlyFire;
 using Content.Shared._FinalStand.Mobs;
+using Content.Shared.ActionBlocker;
 using Content.Shared.Damage;
 using Content.Shared.Damage.Systems;
 using Content.Shared.Examine;
 using Content.Shared.Ghost;
 using Content.Shared.Mobs;
 using Content.Shared.Mobs.Components;
-using Content.Shared.Movement.Components;
+using Content.Shared.Movement.Events;
 using Robust.Server.GameObjects;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Map;
@@ -32,6 +33,7 @@ public sealed partial class FSTeslaZombieSystem : EntitySystem
     [Dependency] private FSTargetAcquisitionSystem _targeting = default!;
     [Dependency] private EntityLookupSystem _lookup = default!;
     [Dependency] private FSFlairSystem _flair = default!;
+    [Dependency] private ActionBlockerSystem _blocker = default!;
 
     private readonly ObjectPool<HashSet<Entity<FSFriendlyFireComponent>>> _chainSetPool =
         new DefaultObjectPool<HashSet<Entity<FSFriendlyFireComponent>>>(
@@ -44,6 +46,15 @@ public sealed partial class FSTeslaZombieSystem : EntitySystem
     {
         base.Initialize();
         SubscribeLocalEvent<FSTeslaZombieComponent, ComponentShutdown>(OnShutdown);
+        SubscribeLocalEvent<FSTeslaZombieComponent, UpdateCanMoveEvent>(OnUpdateCanMove);
+    }
+
+    // Held still while attacking; a direct CanMove write would be undone by the next movement recheck (a knockback
+    // ending, a stun), and walking turns the mob away from its aim.
+    private void OnUpdateCanMove(Entity<FSTeslaZombieComponent> ent, ref UpdateCanMoveEvent args)
+    {
+        if (ent.Comp.LifeStage <= ComponentLifeStage.Running && ent.Comp.IsFiring)
+            args.Cancel();
     }
 
     private void OnShutdown(EntityUid uid, FSTeslaZombieComponent comp, ComponentShutdown args)
@@ -51,11 +62,7 @@ public sealed partial class FSTeslaZombieSystem : EntitySystem
         if (!comp.IsFiring)
             return;
         _pointLight.SetEnabled(uid, false);
-        if (TryComp<InputMoverComponent>(uid, out var mover))
-        {
-            mover.CanMove = true;
-            Dirty(uid, mover);
-        }
+        _blocker.UpdateCanMove(uid);
     }
 
     private const float AcquireRetryInterval = 0.25f;
@@ -95,7 +102,7 @@ public sealed partial class FSTeslaZombieSystem : EntitySystem
         var myPos = _transform.GetMapCoordinates(uid);
         var dir = _transform.GetMapCoordinates(target).Position - myPos.Position;
         if (dir != Vector2.Zero)
-            _transform.SetLocalRotation(uid, new Angle(dir) - MathF.PI / 2f);
+            _transform.SetWorldRotation(uid, new Angle(dir) - MathF.PI / 2f);
 
         comp.IsFiring = true;
         comp.Target = target;
@@ -104,11 +111,7 @@ public sealed partial class FSTeslaZombieSystem : EntitySystem
 
         _pointLight.SetEnabled(uid, true);
 
-        if (TryComp<InputMoverComponent>(uid, out var mover))
-        {
-            mover.CanMove = false;
-            Dirty(uid, mover);
-        }
+        _blocker.UpdateCanMove(uid);
     }
 
     private void UpdateFiring(EntityUid uid, FSTeslaZombieComponent comp, float frameTime)
@@ -192,11 +195,7 @@ public sealed partial class FSTeslaZombieSystem : EntitySystem
 
         _pointLight.SetEnabled(uid, false);
 
-        if (TryComp<InputMoverComponent>(uid, out var mover))
-        {
-            mover.CanMove = true;
-            Dirty(uid, mover);
-        }
+        _blocker.UpdateCanMove(uid);
 
         if (TryComp<HTNComponent>(uid, out var htn))
             _htn.Replan(htn);
