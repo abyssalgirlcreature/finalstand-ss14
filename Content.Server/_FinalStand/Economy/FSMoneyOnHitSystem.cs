@@ -4,7 +4,6 @@ using Content.Server._FinalStand.Perks;
 using Content.Shared._FinalStand.Armor;
 using Content.Shared._FinalStand.HMG;
 using Content.Shared._FinalStand.Weapons;
-using Content.Shared._FinalStand.Shop;
 using Content.Shared.GameTicking;
 using Content.Shared._FinalStand.Perks;
 using Content.Shared.Damage;
@@ -26,7 +25,6 @@ public sealed partial class FSMoneyOnHitSystem : EntitySystem
     [Dependency] private FSPerkEarningsSystem _earnings = default!;
     [Dependency] private WaveGameRuleSystem _waveRule = default!;
 
-    private EntityQuery<FSWeaponUpgradeStateComponent> _upgradeQuery;
     private EntityQuery<FSArmorComponent> _armorQuery;
     private EntityQuery<FSHarvesterComponent> _harvesterQuery;
     private EntityQuery<FSPerkLevelsComponent> _perksQuery;
@@ -45,7 +43,6 @@ public sealed partial class FSMoneyOnHitSystem : EntitySystem
     public override void Initialize()
     {
         base.Initialize();
-        _upgradeQuery = GetEntityQuery<FSWeaponUpgradeStateComponent>();
         _armorQuery = GetEntityQuery<FSArmorComponent>();
         _harvesterQuery = GetEntityQuery<FSHarvesterComponent>();
         _perksQuery = GetEntityQuery<FSPerkLevelsComponent>();
@@ -104,8 +101,6 @@ public sealed partial class FSMoneyOnHitSystem : EntitySystem
         {
             if (TryComp<FSFlatMoneyPerHitComponent>(heldItem, out var flat))
                 payout = flat.Amount;
-            else if (_upgradeQuery.TryGetComponent(heldItem.Value, out var ws) && ws.MoneyPerHitBonus > 0)
-                payout += ws.MoneyPerHitBonus;
 
             if (_harvesterQuery.HasComponent(heldItem.Value))
                 payout = (int) MathF.Round(payout * HarvesterMoneyMultiplier);

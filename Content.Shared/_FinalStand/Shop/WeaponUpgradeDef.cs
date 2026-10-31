@@ -19,8 +19,6 @@ public enum WeaponUpgradeType : byte
     Pierce,
     Radius,
     ExplosiveShot,
-    MoneyGainBonus,
-    MoneyPerHit,
     Slowing,
     BeamChaining,
     Knockback,
@@ -115,9 +113,6 @@ public enum WeaponUpgradeType : byte
     Multishot,
 
     ConvertWeapon,
-
-    // Extra kill money as a fraction of the kill's payout.
-    MoneyGainPercent,
 
     // Melee heavy dash length and damage, as a fraction.
     DashPower,

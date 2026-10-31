@@ -128,7 +128,7 @@ public sealed partial class FSMeleeJuiceSystem : SharedFSMeleeJuiceSystem
     private readonly HashSet<Entity<MobStateComponent>> _nearby = new();
     private readonly HashSet<Entity<MobStateComponent>> _burning = new();
     private readonly HashSet<(EntityUid User, EntityUid Target)> _revDumps = new();
-    private readonly List<(EntityUid Target, int Money, float Percent, EntityUid? Payee)> _ripAndTear = new();
+    private readonly List<(EntityUid Target, float Percent, EntityUid? Payee)> _ripAndTear = new();
     private readonly List<EntityUid> _launched = new();
 
     public override void Initialize()
@@ -172,10 +172,9 @@ public sealed partial class FSMeleeJuiceSystem : SharedFSMeleeJuiceSystem
                     continue;
 
                 var bonus = EnsureComp<FSPendingKillBonusComponent>(target);
-                _ripAndTear.Add((target, bonus.MoneyBonus, bonus.MoneyPercent, bonus.Payee));
+                _ripAndTear.Add((target, bonus.MoneyPercent, bonus.Payee));
                 if (bonus.Payee != user)
                 {
-                    bonus.MoneyBonus = 0;
                     bonus.MoneyPercent = 0f;
                     bonus.Payee = user;
                 }
@@ -827,12 +826,11 @@ public sealed partial class FSMeleeJuiceSystem : SharedFSMeleeJuiceSystem
         base.Update(frameTime);
         _hitsThisTick.Clear();
         _revDumps.Clear();
-        foreach (var (target, money, percent, payee) in _ripAndTear)
+        foreach (var (target, percent, payee) in _ripAndTear)
         {
             if (TerminatingOrDeleted(target) || !TryComp<FSPendingKillBonusComponent>(target, out var bonus))
                 continue;
 
-            bonus.MoneyBonus = money;
             bonus.MoneyPercent = percent;
             bonus.Payee = payee;
         }

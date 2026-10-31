@@ -16,9 +16,6 @@ public sealed partial class FSWeaponUpgradeStateComponent : Component
     [DataField] public Dictionary<string, int> Levels = new();
 
     [DataField] public int ExplosiveShotLevel = 0;
-    [DataField] public int MoneyGainBonusPerKill = 0;
-    [DataField] public float MoneyGainPercentPerKill = 0f;
-    [DataField] public int MoneyPerHitBonus = 0;
     [DataField] public bool SlowingEnabled = false;
     [DataField] public int BeamChainTargets = 0;
     [DataField] public int KnockbackLevel = 0;
@@ -73,8 +70,6 @@ public sealed partial class FSWeaponUpgradeStateComponent : Component
     [DataField] public float HeldSpeedBonusPercent = 0f;
 
     [DataField] public int TotalSpent = 0;
-
-    [DataField, AutoNetworkedField] public bool KnifeGolden = false;
 
     [DataField] public bool VaporiseWeakMobEnabled = false;
     [DataField] public bool PointBlankCritEnabled = false;

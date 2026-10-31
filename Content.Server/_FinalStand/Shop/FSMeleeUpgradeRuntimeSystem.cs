@@ -34,7 +34,6 @@ public sealed partial class FSMeleeUpgradeRuntimeSystem : EntitySystem
     [Dependency] private FSStunOverrideSystem _fsStun = default!;
     [Dependency] private PopupSystem _popup = default!;
     [Dependency] private FSPerkCritSystem _perkCrit = default!;
-    [Dependency] private MoneyGainBonusUpgradeSystem _killBonus = default!;
 
     private EntityQuery<FSFriendlyFireComponent> _ffQuery;
 
@@ -132,9 +131,6 @@ public sealed partial class FSMeleeUpgradeRuntimeSystem : EntitySystem
                     bleed.Instigator = user;
                 }
             }
-
-            _killBonus.Mark(target, user, state.MoneyGainBonusPerKill, state.MoneyGainPercentPerKill);
-
         }
 
         if (state.LifeStealPercent > 0f && totalBaseDamage > 0f)

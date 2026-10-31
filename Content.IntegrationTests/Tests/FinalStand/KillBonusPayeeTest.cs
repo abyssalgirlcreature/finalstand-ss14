@@ -2,9 +2,9 @@ using Content.IntegrationTests.Fixtures;
 using Content.Server._FinalStand.Economy;
 using Content.Server._FinalStand.GameTicking.Rules;
 using Content.Server._FinalStand.Spawners;
-using Content.Server._FinalStand.Upgrades.Effects;
 using Content.Server.GameTicking;
 using Content.Shared._FinalStand.Economy;
+using Content.Shared._FinalStand.Upgrades.Effects;
 using Content.Shared.Mind;
 using Content.Shared.Mobs;
 using Content.Shared.Mobs.Systems;
@@ -13,7 +13,7 @@ using Robust.Shared.Map;
 
 namespace Content.IntegrationTests.Tests.FinalStand;
 
-// A money upgrade marks what its wielder hits; only that player's kill collects the bonus, on top of the plain kill pay.
+// Rip and Tear leaves a kill bonus on what it hits; only that player's kill collects it, on top of the plain kill pay.
 [TestFixture]
 public sealed class KillBonusPayeeTest : GameTest
 {
@@ -28,7 +28,6 @@ public sealed class KillBonusPayeeTest : GameTest
         {
             var minds = SEntMan.System<SharedMindSystem>();
             var mobState = SEntMan.System<MobStateSystem>();
-            var bonus = SEntMan.System<MoneyGainBonusUpgradeSystem>();
             var rewards = SEntMan.System<FSWaveRewardsSystem>();
 
             if (!minds.TryGetMind(ServerSession!, out var mindId, out var mind) || mind.OwnedEntity is not { } body)
@@ -54,6 +53,13 @@ public sealed class KillBonusPayeeTest : GameTest
                 return enemy;
             }
 
+            void Mark(EntityUid enemy)
+            {
+                var bonus = SEntMan.EnsureComponent<FSPendingKillBonusComponent>(enemy);
+                bonus.MoneyPercent = 0.5f;
+                bonus.Payee = body;
+            }
+
             var plain = Enemy();
             var kill = rewards.KillCredits(plain);
             Assert.That(kill, Is.GreaterThan(0));
@@ -62,18 +68,18 @@ public sealed class KillBonusPayeeTest : GameTest
             var plainPay = wallet.Credits - before;
 
             var marked = Enemy();
-            bonus.Mark(marked, body, 10, 0.5f);
+            Mark(marked);
             before = wallet.Credits;
             mobState.ChangeMobState(marked, MobState.Dead, origin: body);
-            Assert.That(wallet.Credits - before - plainPay, Is.EqualTo(10 + (int) MathF.Round(0.5f * kill)),
-                "the marking player's kill pays the flat bonus plus the share of the kill");
+            Assert.That(wallet.Credits - before - plainPay, Is.EqualTo((int) MathF.Round(0.5f * kill)),
+                "the marking player's kill pays the share of the kill on top");
 
             var otherBefore = otherWallet.Credits;
             mobState.ChangeMobState(Enemy(), MobState.Dead, origin: other);
             var otherPlainPay = otherWallet.Credits - otherBefore;
 
             var stolen = Enemy();
-            bonus.Mark(stolen, body, 10, 0.5f);
+            Mark(stolen);
             before = wallet.Credits;
             otherBefore = otherWallet.Credits;
             mobState.ChangeMobState(stolen, MobState.Dead, origin: other);
