@@ -1,4 +1,5 @@
 using System.Numerics;
+using Content.Shared.Damage;
 using Robust.Shared.Audio;
 using Robust.Shared.GameStates;
 
@@ -18,6 +19,8 @@ public sealed partial class FSFlamethrowerComponent : Component
     [DataField] public float FlameLifetime = 0.6f;
     // Fire stacks each flame adds to whatever it sets alight.
     [DataField] public float FireStacks = 0.1f;
+    // Dealt by each flame that catches someone, on top of the fire it starts.
+    [DataField] public DamageSpecifier FlameDamage = new();
     [DataField] public float WindupDuration = 0.6f;
     [DataField] public float TrackingRotationSpeed = 3.0f; // radians per second
 

@@ -7,6 +7,9 @@ using Content.Server._FinalStand.Spawners;
 using Content.Server.NPC.HTN;
 using Content.Shared._FinalStand.Mobs;
 using Content.Shared.Atmos.Components;
+using Content.Shared.Damage;
+using Content.Shared.Damage.Components;
+using Content.Shared.FixedPoint;
 using Robust.Shared.GameObjects;
 using Robust.Shared.Map;
 using Robust.Shared.Maths;
@@ -114,6 +117,22 @@ public sealed class FlamethrowerFlameTest : GameTest
             Assert.That(alight, Does.Contain(target), "the target in the cone didn't catch");
             Assert.That(bodies, Is.Zero, "firing spawned physics bodies");
         });
+    }
+
+    [Test]
+    public async Task FlamesHurtWhoTheyCatch()
+    {
+        var entMan = Server.ResolveDependency<IEntityManager>();
+        var (flamer, target) = await Fire();
+
+        // A type nothing else on the airless map deals, so only the flames count.
+        await Server.WaitPost(() =>
+            entMan.GetComponent<FSFlamethrowerComponent>(flamer).FlameDamage = new DamageSpecifier { DamageDict = { ["Caustic"] = 1 } });
+        await Server.WaitRunTicks(FireTicks);
+
+        await Server.WaitAssertion(() =>
+            Assert.That(entMan.GetComponent<DamageableComponent>(target).Damage.DamageDict.GetValueOrDefault("Caustic"),
+                Is.GreaterThan(FixedPoint2.Zero), "the flames set the target alight without hurting it"));
     }
 
     [Test]

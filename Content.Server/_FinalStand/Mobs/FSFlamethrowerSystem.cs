@@ -6,6 +6,8 @@ using Content.Server.NPC.HTN;
 using Content.Shared._FinalStand.Mobs;
 using Content.Shared.ActionBlocker;
 using Content.Shared.Atmos.Components;
+using Content.Shared.Damage;
+using Content.Shared.Damage.Systems;
 using Content.Shared.Mobs;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Movement.Events;
@@ -29,6 +31,7 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
     [Dependency] private RayCastSystem _rayCast = default!;
     [Dependency] private EntityLookupSystem _lookup = default!;
     [Dependency] private FlammableSystem _flammable = default!;
+    [Dependency] private DamageableSystem _damageable = default!;
     [Dependency] private ActionBlockerSystem _blocker = default!;
     [Dependency] private FSInjuryRulesSystem _injuryRules = default!;
 
@@ -307,6 +310,9 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
 
         _candidates.Clear();
         _lookup.GetEntitiesIntersecting(map, swept.Enlarged(HitRadius), _candidates);
+        var flameDamage = TryComp<FSFlamethrowerComponent>(uid, out var flamer) && !flamer.FlameDamage.Empty
+            ? flamer.FlameDamage
+            : null;
 
         foreach (var (target, flammable) in _candidates)
         {
@@ -325,6 +331,8 @@ public sealed partial class FSFlamethrowerSystem : EntitySystem
                 flammable.FireStacks += flame.FireStacks;
                 _flammable.Ignite(target, uid, flammable);
                 _injuryRules.NoteIgnition(target, uid);
+                if (flameDamage != null)
+                    _damageable.TryChangeDamage(target, flameDamage, origin: uid);
             }
         }
 
