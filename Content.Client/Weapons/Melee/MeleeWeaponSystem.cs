@@ -253,6 +253,10 @@ public sealed partial class MeleeWeaponSystem : SharedMeleeWeaponSystem
         if (Interaction.CombatModeCanHandInteract(attacker, target))
             return;
 
+        // FINALSTAND: a clicked corpse isn't something to swing at.
+        if (target is { } clicked && (MobState.IsDead(clicked) || _fsJuice.IsDoomed(clicked)))
+            target = null;
+
         if ((target == null || !IsEnemy(attacker, target.Value)) && direction != Vector2.Zero && FindLightTarget(attacker, attackerPos, direction, meleeComponent.Range) is { } assisted)
         {
             target = assisted;
@@ -267,31 +271,10 @@ public sealed partial class MeleeWeaponSystem : SharedMeleeWeaponSystem
         RaisePredictiveEvent(new LightAttackEvent(GetNetEntity(target), GetNetEntity(weaponUid), GetNetCoordinates(coordinates)) { ViewTick = _clientTiming.LastRealTick }); // FINALSTAND
     }
 
-    // FINALSTAND: nearest living enemy in a 70 degree cone toward the cursor
-    private EntityUid? FindLightTarget(EntityUid attacker, MapCoordinates attackerPos, Vector2 direction, float range)
+    // FINALSTAND: a mob this client just landed a killing hit on still looks alive until the server says otherwise.
+    protected override bool IsEnemy(EntityUid attacker, EntityUid uid)
     {
-        EntityUid? best = null;
-        var bestDistance = float.MaxValue;
-        foreach (var uid in ArcRayCast(attackerPos.Position, direction.ToWorldAngle(), Angle.FromDegrees(70), range, attackerPos.MapId, attacker))
-        {
-            if (!IsEnemy(attacker, uid))
-                continue;
-
-            var distance = (TransformSystem.GetWorldPosition(uid) - attackerPos.Position).LengthSquared();
-            if (distance >= bestDistance)
-                continue;
-
-            best = uid;
-            bestDistance = distance;
-        }
-
-        return best;
-    }
-
-    // FINALSTAND
-    private bool IsEnemy(EntityUid attacker, EntityUid uid)
-    {
-        return HasComp<MobStateComponent>(uid) && !MobState.IsDead(uid) && !_fsJuice.IsAlly(attacker, uid);
+        return base.IsEnemy(attacker, uid) && !_fsJuice.IsDoomed(uid);
     }
 
     private void OnMeleeLunge(MeleeLungeEvent ev)

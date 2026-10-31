@@ -86,13 +86,17 @@ public abstract partial class SharedFSMeleeJuiceSystem
             && body.LinearVelocity.Length() < BraceStill;
     }
 
-    // Coup de Grace: an execution readies the next swing at once.
+    // Coup de Grace: an execution readies the next swing almost at once. Not on the very next tick: a client that
+    // hasn't seen the kill yet keeps predicting executions, and each one would ready another swing, a flurry the
+    // server then throws away.
+    private static readonly TimeSpan CoupDeGraceDelay = TimeSpan.FromSeconds(0.1);
+
     private void CoupDeGrace(EntityUid user, Entity<FSMeleeJuiceComponent> weapon)
     {
         if (Signature(weapon, FSMeleeSignature.CoupDeGrace) <= 0f || !TryComp<MeleeWeaponComponent>(weapon, out var melee))
             return;
 
-        melee.NextAttack = Timing.CurTime;
+        melee.NextAttack = Timing.CurTime + CoupDeGraceDelay;
         DirtyField(weapon, melee, nameof(MeleeWeaponComponent.NextAttack));
     }
 

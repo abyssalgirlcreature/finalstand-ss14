@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
+using Content.Shared._FinalStand.Melee; // FINALSTAND
 using Content.Shared.ActionBlocker;
 using Content.Shared.Actions.Events;
 using Content.Shared.Administration.Components;
@@ -58,6 +59,7 @@ public abstract partial class SharedMeleeWeaponSystem : EntitySystem
     [Dependency] private InventorySystem _inventory = default!;
     [Dependency] private MeleeSoundSystem _meleeSound = default!;
     [Dependency] protected MobStateSystem MobState = default!;
+    [Dependency] private SharedFSMeleeJuiceSystem _fsJuice = default!; // FINALSTAND
     [Dependency] private SharedAudioSystem _audio = default!;
     [Dependency] protected SharedCombatModeSystem CombatMode = default!;
     [Dependency] protected SharedMapSystem Maps = default!;
@@ -509,6 +511,15 @@ public abstract partial class SharedMeleeWeaponSystem : EntitySystem
         var target = GetEntity(ev.Target);
         var resistanceBypass = GetResistanceBypass(meleeUid, user, component);
 
+        // FINALSTAND: aimed at a mob that died before the swing arrived (the swinger hadn't seen the kill yet), so take
+        // the nearest living enemy that way instead of hitting the corpse.
+        if (target is { } aimed && MobState.IsDead(aimed))
+        {
+            var from = TransformSystem.GetMapCoordinates(user);
+            var toward = TransformSystem.GetWorldPosition(aimed) - from.Position;
+            target = toward == Vector2.Zero ? null : FindLightTarget(user, from, toward, component.Range);
+        }
+
         // For consistency with wide attacks stuff needs damageable.
         if (Deleted(target) ||
             !HasComp<DamageableComponent>(target) ||
@@ -767,6 +778,33 @@ public abstract partial class SharedMeleeWeaponSystem : EntitySystem
         }
 
         return true;
+    }
+
+    // FINALSTAND: nearest living enemy in a 70 degree cone toward the aim
+    protected EntityUid? FindLightTarget(EntityUid attacker, MapCoordinates attackerPos, Vector2 direction, float range)
+    {
+        EntityUid? best = null;
+        var bestDistance = float.MaxValue;
+        foreach (var uid in ArcRayCast(attackerPos.Position, direction.ToWorldAngle(), Angle.FromDegrees(70), range, attackerPos.MapId, attacker))
+        {
+            if (!IsEnemy(attacker, uid))
+                continue;
+
+            var distance = (TransformSystem.GetWorldPosition(uid) - attackerPos.Position).LengthSquared();
+            if (distance >= bestDistance)
+                continue;
+
+            best = uid;
+            bestDistance = distance;
+        }
+
+        return best;
+    }
+
+    // FINALSTAND
+    protected virtual bool IsEnemy(EntityUid attacker, EntityUid uid)
+    {
+        return HasComp<MobStateComponent>(uid) && !MobState.IsDead(uid) && !_fsJuice.IsAlly(attacker, uid);
     }
 
     protected HashSet<EntityUid> ArcRayCast(Vector2 position, Angle angle, Angle arcWidth, float range, MapId mapId, EntityUid ignore)
