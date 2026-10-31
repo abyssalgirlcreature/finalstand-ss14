@@ -75,13 +75,16 @@ public sealed class FSShopWeaponBoundUserInterface : BoundUserInterface
         if (_window == null || !EntMan.TryGetComponent<FSShopWeaponComponent>(Owner, out var comp))
             return;
         var shopClient = EntMan.System<FSShopClientSystem>();
-        var refund = ComputeEstimatedRefund(comp, shopClient.UpgradeLevels);
-        var hasWeapon = shopClient.PlayerHasWeaponInInventory(shopClient.GetLocalPlayer(), comp.WeaponProtoId,
-            comp.WeaponProtoIdAliases.Count > 0 ? comp.WeaponProtoIdAliases : null);
+        var player = shopClient.GetLocalPlayer();
+        var aliases = comp.WeaponProtoIdAliases.Count > 0 ? comp.WeaponProtoIdAliases : null;
+        // Job gear sells for nothing; only a bought copy pays for the weapon itself.
+        var price = shopClient.CarriesBoughtCopy(player, comp.WeaponProtoId, aliases) ? comp.Price : 0;
+        var refund = ComputeEstimatedRefund(price, comp, shopClient.UpgradeLevels);
+        var hasWeapon = shopClient.PlayerHasWeaponInInventory(player, comp.WeaponProtoId, aliases);
         _window.UpdateSellButton(refund, hasWeapon);
     }
 
-    private static int ComputeEstimatedRefund(FSShopWeaponComponent comp, Dictionary<string, int> levels)
+    private static int ComputeEstimatedRefund(int price, FSShopWeaponComponent comp, Dictionary<string, int> levels)
     {
         var estimatedSpent = 0;
         foreach (var def in comp.Upgrades)
@@ -89,7 +92,7 @@ public sealed class FSShopWeaponBoundUserInterface : BoundUserInterface
             for (var l = 1; l <= levels.GetValueOrDefault(def.Id, 0); l++)
                 estimatedSpent += def.LevelCost(l, false);
         }
-        return FSSellBack.Refund(comp.Price, estimatedSpent);
+        return FSSellBack.Refund(price, estimatedSpent);
     }
 
     private void OnRefreshNeeded()
