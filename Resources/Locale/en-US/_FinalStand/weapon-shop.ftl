@@ -87,7 +87,7 @@ fs-weapon-shop-buy-short = BUY · { $price } ({ $short } SHORT)
 fs-weapon-shop-buy-another = BUY ANOTHER · { $price }
 fs-weapon-shop-sell = SELL · { $refund }
 fs-weapon-shop-sell-confirm = CONFIRM SELL · { $refund }
-fs-weapon-shop-sell-tooltip = Refunds 40% of the price and 40% of what you spent upgrading it.
+fs-weapon-shop-sell-tooltip = Refunds 70% of the price and 70% of what you spent upgrading it.
 
 fs-weapon-shop-window-title = Weapon Shop
 fs-weapon-shop-upgrade-progress = UPGRADE PROGRESS

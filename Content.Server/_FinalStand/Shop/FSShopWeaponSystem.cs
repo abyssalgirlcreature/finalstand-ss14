@@ -461,11 +461,7 @@ public sealed partial class FSShopWeaponSystem : EntitySystem
 
         var combinedSpent = TryComp<FSWeaponUpgradeStateComponent>(weapon, out var ws) ? ws.TotalSpent : 0;
 
-        var baseRefund    = (int)(comp.Price * 0.40f);
-        var upgradeRefund = (int)(combinedSpent * 0.40f);
-        var totalRefund   = baseRefund + upgradeRefund;
-        totalRefund = (int)(Math.Round(totalRefund / 50.0) * 50);
-        totalRefund = Math.Max(0, totalRefund);
+        var totalRefund = FSSellBack.Refund(comp.Price, combinedSpent);
 
         // Dedup key is the net entity, not the raw EntityUid, which gets recycled.
         _lastSellTime[userId] = now;

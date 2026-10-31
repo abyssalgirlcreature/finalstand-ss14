@@ -89,8 +89,7 @@ public sealed class FSShopWeaponBoundUserInterface : BoundUserInterface
             for (var l = 1; l <= levels.GetValueOrDefault(def.Id, 0); l++)
                 estimatedSpent += def.LevelCost(l, false);
         }
-        var raw = comp.Price * 0.40 + estimatedSpent * 0.40;
-        return Math.Max(0, (int)Math.Round(raw / 50.0) * 50);
+        return FSSellBack.Refund(comp.Price, estimatedSpent);
     }
 
     private void OnRefreshNeeded()
