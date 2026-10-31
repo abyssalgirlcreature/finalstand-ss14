@@ -405,7 +405,7 @@ fs-upgrade-chainsaw-protective-saw = Protective Saw
 fs-upgrade-chainsaw-protective-saw-desc = While wielded, take 20% less damage.
 
 fs-upgrade-chainsaw-rip-and-tear = Rip and Tear
-fs-upgrade-chainsaw-rip-and-tear-desc = A right click spending 5 or more rev heals you 3 health per zombie it hits, and those kills pay 50% more.
+fs-upgrade-chainsaw-rip-and-tear-desc = A right click spending 5 or more rev heals you 3 health per zombie it hits, and those kills pay 10% more.
 
 fs-upgrade-chainsaw-redline = Redline
 fs-upgrade-chainsaw-redline-desc = Rev builds up to 10 instead of 6.

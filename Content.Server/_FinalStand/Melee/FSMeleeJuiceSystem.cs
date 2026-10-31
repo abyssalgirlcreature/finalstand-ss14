@@ -89,7 +89,7 @@ public sealed partial class FSMeleeJuiceSystem : SharedFSMeleeJuiceSystem
     private const float ShotRange = 10f;
     private const float BroadsideSpread = 9f;
     private const int RipAndTearStacks = 5;
-    private const float RipAndTearMoney = 0.5f;
+    private const float RipAndTearMoney = 0.1f;
     private const float SlamFireStacks = 3f;
     private const float RicochetSpeed = 0.6f;
     private const float RicochetProbe = 0.8f;
