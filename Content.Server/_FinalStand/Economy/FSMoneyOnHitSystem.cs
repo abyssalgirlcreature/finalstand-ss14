@@ -9,7 +9,9 @@ using Content.Shared._FinalStand.Perks;
 using Content.Shared.Damage;
 using Content.Shared.Damage.Systems;
 using Content.Shared.Hands.EntitySystems;
+using Content.Shared.FixedPoint;
 using Content.Shared.Mind;
+using Content.Shared.Mobs;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.Projectiles;
 
@@ -20,7 +22,7 @@ public sealed partial class FSMoneyOnHitSystem : EntitySystem
     [Dependency] private FSPlayerWalletSystem _wallet = default!;
     [Dependency] private SharedMindSystem _mind = default!;
     [Dependency] private SharedHandsSystem _hands = default!;
-    [Dependency] private MobStateSystem _mobState = default!;
+    [Dependency] private MobThresholdSystem _thresholds = default!;
     [Dependency] private FSUndyingSystem _undying = default!;
     [Dependency] private FSPerkEarningsSystem _earnings = default!;
     [Dependency] private WaveGameRuleSystem _waveRule = default!;
@@ -32,7 +34,9 @@ public sealed partial class FSMoneyOnHitSystem : EntitySystem
     // Profiteer's share is a few percent of a hit, so the fraction carries over rather than rounding to nothing.
     private readonly Dictionary<EntityUid, float> _profiteerRemainder = new();
 
-    private const int BaseMoneyPerHit = 30;
+    // Paid per point of damage dealt, so every weapon earns the same for the same zombie. An MK58 bullet (16)
+    // pays about what a hit paid before (30).
+    private const float CreditsPerDamage = 2f;
 
     private EntityUid? _deployableHitTarget;
     private (EntityUid Target, int Amount)? _flatHit;
@@ -81,9 +85,11 @@ public sealed partial class FSMoneyOnHitSystem : EntitySystem
 
         if (!args.DamageIncreased || args.Origin == null)
             return;
-        if (_mobState.IsDead(uid))
-            return;
         if (_armorQuery.TryGetComponent(uid, out var armor) && armor.CurrentArmor > 0)
+            return;
+
+        var damage = PaidDamage(uid, args);
+        if (damage <= 0f)
             return;
 
         if (_undying.IsActive(args.Origin.Value))
@@ -96,21 +102,50 @@ public sealed partial class FSMoneyOnHitSystem : EntitySystem
         if (alreadyGiven >= max)
             return;
 
-        var payout = flatAmount ?? BaseMoneyPerHit;
+        var earned = flatAmount ?? damage * CreditsPerDamage;
         if (flatAmount == null && !fromDeployable && _hands.TryGetActiveItem(args.Origin.Value, out var heldItem))
         {
             if (TryComp<FSFlatMoneyPerHitComponent>(heldItem, out var flat))
-                payout = flat.Amount;
+                earned = flat.Amount;
 
             if (_harvesterQuery.HasComponent(heldItem.Value))
-                payout = (int) MathF.Round(payout * HarvesterMoneyMultiplier);
+                earned *= HarvesterMoneyMultiplier;
         }
+
+        earned += cap.UnpaidPerPlayer.GetValueOrDefault(mindId);
+        var payout = (int) earned;
+        cap.UnpaidPerPlayer[mindId] = earned - payout;
+        if (payout <= 0)
+            return;
 
         var give = Math.Min(payout, max - alreadyGiven);
         cap.MoneyGivenPerPlayer[mindId] = alreadyGiven + give;
         _wallet.GiveCredits(mindId, give, FSCreditSource.Hit);
         if (ProfiteerShare(mindId, give) is var share and > 0)
             _wallet.GiveCredits(mindId, share, FSCreditSource.Perk);
+    }
+
+    // What this hit took off the zombie's life: the damage it dealt, minus any past what was left to kill it. A hit on
+    // a zombie that was already dead pays nothing.
+    private float PaidDamage(EntityUid uid, DamageChangedEvent args)
+    {
+        if (args.DamageDelta is not { } delta)
+            return 0f;
+
+        var dealt = FixedPoint2.Zero;
+        foreach (var amount in delta.DamageDict.Values)
+        {
+            if (amount > FixedPoint2.Zero)
+                dealt += amount;
+        }
+
+        if (_thresholds.TryGetThresholdForState(uid, MobState.Dead, out var dead))
+        {
+            var before = args.Damageable.TotalDamage - delta.GetTotal();
+            dealt = FixedPoint2.Min(dealt, dead.Value - before);
+        }
+
+        return dealt.Float();
     }
 
     // Profiteer is a percentage of hit money, so it follows the same cap, armour and Harvester rules.
