@@ -265,9 +265,8 @@ public sealed partial class WaveGameRuleSystem : GameRuleSystem<WaveGameRuleComp
         comp.PhaseEndTime = Timing.CurTime + PrepDuration(comp);
         _darkWave.Roll(uid, comp.WaveNumber, IsBossWave(comp.WaveNumber));
 
+        // The first prep starts before the map loads; ActiveTick keeps retrying while there are none.
         _spawning.SelectSpawners(comp, CountScalingPlayers());
-        if (comp.SpawnerEntities.Count == 0)
-            Log.Warning($"No WaveEnemySpawner entities found! Wave {comp.WaveNumber} will be empty.");
 
         Log.Info($"Prep phase started. Wave {comp.WaveNumber} begins in {PrepDuration(comp).TotalSeconds}s. " +
                  $"Pre-selected {comp.SpawnerEntities.Count} spawner(s).");
@@ -321,6 +320,9 @@ public sealed partial class WaveGameRuleSystem : GameRuleSystem<WaveGameRuleComp
 
         if (!comp.CCCEntity.IsValid())
             Log.Warning("No FinalStandCCC entity found — enemies will not beeline to objective.");
+
+        if (comp.SpawnerEntities.Count == 0)
+            Log.Warning($"No WaveEnemySpawner entities found! Wave {comp.WaveNumber} will be empty.");
 
         // Fixed for the wave. Sessions alone would count the lobby, ghosts and admins.
         comp.ScalingPlayersThisWave = CountScalingPlayers();
