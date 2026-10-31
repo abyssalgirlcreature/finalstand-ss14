@@ -51,7 +51,7 @@ public sealed class WeaponConvertOnceTest : GameTest
             var mind = minds.CreateMind(null, "converter");
             minds.TransferTo(mind, player);
             mindId = mind.Owner;
-            wallets.GiveCredits(mindId, Funds);
+            wallets.GiveCredits(mindId, Funds, FSCreditSource.Admin);
 
             // The harvester shop is science only.
             access.TrySetTags(player, ["Research"], entMan.EnsureComponent<AccessComponent>(player));
@@ -114,7 +114,7 @@ public sealed class WeaponConvertOnceTest : GameTest
             var player = entMan.SpawnEntity("MobHuman", map.GridCoords);
             var mind = minds.CreateMind(null, "duelist");
             minds.TransferTo(mind, player);
-            wallets.GiveCredits(mind.Owner, Funds);
+            wallets.GiveCredits(mind.Owner, Funds, FSCreditSource.Admin);
 
             var backpack = entMan.SpawnEntity("ClothingBackpack", map.GridCoords);
             Assert.That(inventory.TryEquip(player, backpack, "back", silent: true, force: true), "couldn't give the player a bag");

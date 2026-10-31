@@ -82,7 +82,7 @@ public sealed partial class FSArmorShopSystem : EntitySystem
 
         var netCost = FSArmorShopDefs.GetNetCost(tradeIn, tier);
 
-        if (netCost > 0 && !_wallet.TryDeductCredits(mindId, netCost))
+        if (netCost > 0 && !_wallet.TryDeductCredits(mindId, netCost, new FSPurchase(FSPurchaseKind.Armor, tier.ID)))
         {
             _popup.PopupEntity(Loc.GetString("fs-armor-shop-cant-afford", ("price", netCost)), uid, player);
             return;
@@ -91,13 +91,13 @@ public sealed partial class FSArmorShopSystem : EntitySystem
         if (!ApplyArmorToMob(player, tier))
         {
             if (netCost > 0)
-                _wallet.AddCredits(mindId, netCost);
+                _wallet.AddCredits(mindId, netCost, FSCreditSource.Refund);
             return;
         }
 
         // A step down refunds the difference.
         if (netCost < 0)
-            _wallet.AddCredits(mindId, -netCost);
+            _wallet.AddCredits(mindId, -netCost, FSCreditSource.Sale);
 
         var from = old?.ID ?? "none";
         _adminLogger.Add(netCost >= 0 ? LogType.StorePurchase : LogType.StoreRefund, LogImpact.Low,

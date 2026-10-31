@@ -27,6 +27,6 @@ public sealed partial class MoneyGainBonusUpgradeSystem : EntitySystem
 
         var credits = (int) MathF.Round(bonus.MoneyPercent * _rewards.KillCredits(uid));
         if (credits > 0)
-            _wallet.GiveCredits(mindId, credits);
+            _wallet.GiveCredits(mindId, credits, FSCreditSource.KillBonus);
     }
 }

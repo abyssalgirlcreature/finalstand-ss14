@@ -20,12 +20,12 @@ public sealed class WalletTest : GameTest
             var wallet = entMan.System<FSPlayerWalletSystem>();
             var mind = entMan.System<SharedMindSystem>().CreateMind(null, "Spender").Owner;
 
-            wallet.GiveCredits(mind, 100);
+            wallet.GiveCredits(mind, 100, FSCreditSource.Kill);
             Assert.Multiple(() =>
             {
-                Assert.That(wallet.TryDeductCredits(mind, -30_000), Is.False);
+                Assert.That(wallet.TryDeductCredits(mind, -30_000, new FSPurchase(FSPurchaseKind.Weapon, "test")), Is.False);
                 Assert.That(wallet.GetCredits(mind), Is.EqualTo(100));
-                Assert.That(wallet.TryDeductCredits(mind, 60), Is.True);
+                Assert.That(wallet.TryDeductCredits(mind, 60, new FSPurchase(FSPurchaseKind.Weapon, "test")), Is.True);
                 Assert.That(wallet.GetCredits(mind), Is.EqualTo(40));
             });
         });

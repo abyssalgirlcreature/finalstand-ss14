@@ -212,7 +212,7 @@ public sealed partial class FSShopWeaponSystem : EntitySystem
             return;
         }
 
-        if (!_wallet.TryDeductCredits(mindId, comp.Price))
+        if (!_wallet.TryDeductCredits(mindId, comp.Price, new FSPurchase(FSPurchaseKind.Weapon, MetaData(uid).EntityPrototype?.ID ?? comp.WeaponProtoId?.Id ?? "?")))
         {
             _popup.PopupEntity(Loc.GetString("shop-weapon-insufficient-funds"), uid, player);
             return;
@@ -307,7 +307,7 @@ public sealed partial class FSShopWeaponSystem : EntitySystem
         var cost = def.LevelCost(currentLevel + 1,
             def.DiscountResearch is { } discountNode && _fsResearch.IsNodeUnlocked(discountNode));
 
-        if (!_wallet.TryDeductCredits(mindId, cost))
+        if (!_wallet.TryDeductCredits(mindId, cost, new FSPurchase(FSPurchaseKind.Upgrade, def.Id, currentLevel + 1)))
         {
             _popup.PopupEntity(Loc.GetString("shop-weapon-insufficient-funds"), uid, player);
             return;
@@ -479,7 +479,7 @@ public sealed partial class FSShopWeaponSystem : EntitySystem
 
         QueueDel(weapon);
         CleanupAmmoForWeapon(player, comp, ws);
-        _wallet.AddCredits(mindId, totalRefund);
+        _wallet.AddCredits(mindId, totalRefund, FSCreditSource.Sale);
 
         _popup.PopupEntity(Loc.GetString("fs-weapon-shop-sold-for", ("amount", totalRefund.ToString("N0"))), shopUid, player);
         SendSellResponse(userId, success: true, "");

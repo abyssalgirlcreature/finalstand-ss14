@@ -248,13 +248,13 @@ public sealed class WaveObjectiveKindsTest : GameTest
         {
             var (mind, _) = StartCombat(map.GridCoords);
             var wallet = SEntMan.System<FSPlayerWalletSystem>();
-            wallet.GiveCredits(mind, 1000);
+            wallet.GiveCredits(mind, 1000, FSCreditSource.Kill);
             var current = Start("FSObjectiveLeanWave");
 
-            Assert.That(wallet.TryDeductCredits(mind, 10, spending: false), Is.True);
+            Assert.That(wallet.TryDeductCredits(mind, 10, new FSPurchase(FSPurchaseKind.Transfer, "test"), spending: false), Is.True);
             Assert.That(current.Result, Is.EqualTo(FSWaveObjectiveResult.InProgress), "sending a teammate cash isn't spending");
 
-            Assert.That(wallet.TryDeductCredits(mind, 10), Is.True);
+            Assert.That(wallet.TryDeductCredits(mind, 10, new FSPurchase(FSPurchaseKind.Weapon, "test")), Is.True);
             Assert.That(current.Result, Is.EqualTo(FSWaveObjectiveResult.Failed));
         });
     }

@@ -453,7 +453,7 @@ public sealed partial class FSMedicalStatsSystem : EntitySystem
         var multiplier = job != null && FSMedicalPayoutRates.JobMultipliers.TryGetValue(job, out var jobScale) ? jobScale : 1f;
         var credits = (int) MathF.Round(line.Credits * multiplier);
         if (credits > 0)
-            _wallet.GiveCredits(mindId, credits);
+            _wallet.GiveCredits(mindId, credits, FSCreditSource.Medical);
 
         if (line.Fund > 0)
             _medFund.GrantMedicalFunds(line.Fund, source, mindId);

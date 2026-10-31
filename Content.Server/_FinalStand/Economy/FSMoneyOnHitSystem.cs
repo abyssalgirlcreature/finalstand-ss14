@@ -108,7 +108,9 @@ public sealed partial class FSMoneyOnHitSystem : EntitySystem
 
         var give = Math.Min(payout, max - alreadyGiven);
         cap.MoneyGivenPerPlayer[mindId] = alreadyGiven + give;
-        _wallet.GiveCredits(mindId, give + ProfiteerShare(mindId, give));
+        _wallet.GiveCredits(mindId, give, FSCreditSource.Hit);
+        if (ProfiteerShare(mindId, give) is var share and > 0)
+            _wallet.GiveCredits(mindId, share, FSCreditSource.Perk);
     }
 
     // Profiteer is a percentage of hit money, so it follows the same cap, armour and Harvester rules.

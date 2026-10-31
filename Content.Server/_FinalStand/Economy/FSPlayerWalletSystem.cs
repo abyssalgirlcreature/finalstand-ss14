@@ -164,9 +164,9 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
         return _cachedUsernames.TryGetValue(userId, out var cached) ? cached : "unknown";
     }
 
-    public void DistributeCredits(int amount) => DistributeCredits(amount, _ => 1f);
+    public void DistributeCredits(int amount, FSCreditSource source) => DistributeCredits(amount, source, _ => 1f);
 
-    public void DistributeCredits(int amount, Func<EntityUid, float> scale)
+    public void DistributeCredits(int amount, FSCreditSource source, Func<EntityUid, float> scale)
     {
         var count = 0;
         foreach (var session in _playerManager.Sessions)
@@ -222,9 +222,9 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
     }
 
     // Earnings: kills, payouts, perks. These count towards the wave report's EARNED.
-    public void GiveCredits(EntityUid mindId, int amount)
+    public void GiveCredits(EntityUid mindId, int amount, FSCreditSource source)
     {
-        AddCredits(mindId, amount);
+        AddCredits(mindId, amount, source);
         if (amount <= 0)
             return;
 
@@ -233,7 +233,7 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
     }
 
     // Credits that aren't earnings: refunds, sell-backs and transfers between players.
-    public void AddCredits(EntityUid mindId, int amount)
+    public void AddCredits(EntityUid mindId, int amount, FSCreditSource source)
     {
         var wallet = GetWallet(mindId);
         wallet.Credits += amount;
@@ -241,7 +241,7 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
     }
 
     // Pass spending: false for credits that move to another player rather than buying something.
-    public bool TryDeductCredits(EntityUid mindId, int amount, bool spending = true)
+    public bool TryDeductCredits(EntityUid mindId, int amount, FSPurchase purchase, bool spending = true)
     {
         // A negative charge would quietly pay out; callers refund through AddCredits.
         if (amount < 0 || !TryComp<FSPlayerWalletComponent>(mindId, out var wallet) || wallet.Credits < amount)
@@ -253,7 +253,7 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
         return true;
     }
 
-    public int DeductUpTo(EntityUid mindId, int amount)
+    public int DeductUpTo(EntityUid mindId, int amount, FSPurchase purchase)
     {
         if (amount <= 0)
             return 0;

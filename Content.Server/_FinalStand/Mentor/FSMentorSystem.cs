@@ -146,7 +146,7 @@ public sealed partial class FSMentorSystem : EntitySystem
 
         var granted = Award(mentor, rookie, FSMentorRules.ReviveMp, "fs-mentor-reason-revive");
         if (granted > 0)
-            _wallet.GiveCredits(ev.HealerMind, ReviveCredits * granted / FSMentorRules.ReviveMp);
+            _wallet.GiveCredits(ev.HealerMind, ReviveCredits * granted / FSMentorRules.ReviveMp, FSCreditSource.Mentor);
     }
 
     private void OnHealed(ref FSAllyHealedEvent ev)
@@ -163,7 +163,7 @@ public sealed partial class FSMentorSystem : EntitySystem
 
         var granted = Award(mentor, rookie, points, "fs-mentor-reason-heal");
         if (granted > 0)
-            _wallet.GiveCredits(ev.HealerMind, HealCreditsPerMp * granted);
+            _wallet.GiveCredits(ev.HealerMind, HealCreditsPerMp * granted, FSCreditSource.Mentor);
     }
 
     private void OnWaveEnded(ref WaveEndedEvent ev)

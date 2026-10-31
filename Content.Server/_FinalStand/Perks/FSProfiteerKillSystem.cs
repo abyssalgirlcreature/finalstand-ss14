@@ -27,7 +27,7 @@ public sealed partial class FSProfiteerKillSystem : EntitySystem
         if (level <= 0) return;
 
         var amount = (int)(FSPerkBonusConstants.ProfiteerKillBase * level * FSPerkBonusConstants.ProfiteerFraction);
-        _wallet.GiveCredits(ev.MindId, amount);
+        _wallet.GiveCredits(ev.MindId, amount, FSCreditSource.Perk);
         _earnings.RecordCredits(ev.MindId, "Profiteer", amount);
     }
 }
