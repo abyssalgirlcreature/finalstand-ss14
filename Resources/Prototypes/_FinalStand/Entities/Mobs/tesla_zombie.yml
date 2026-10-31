@@ -20,8 +20,8 @@
     chainRange: 5.5
     attackCooldown: 3
     maxChainTargets: 5
-    primaryDamageShock: 35
-    chainDamageShock: 20
+    primaryDamageShock: 105
+    chainDamageShock: 60
   - type: Insulated
   - type: MobThresholds
     thresholds:

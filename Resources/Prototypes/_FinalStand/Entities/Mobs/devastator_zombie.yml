@@ -30,6 +30,7 @@
   - type: FSStunResist
     durationMultiplier: 0.25
   - type: MeleeWeapon
+    attackRate: 1.5
     altDisarm: false
     angle: 0
     animation: WeaponArcClaw
