@@ -7,6 +7,7 @@ public enum FSMeleeSignature : byte
     CoupDeGrace,
     Hemorrhage,
     Opportunist,
+    Inconspicuous,
 
     // Bat
     GrandSlam,
