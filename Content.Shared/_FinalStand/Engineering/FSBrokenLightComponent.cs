@@ -1,8 +1,6 @@
-using Robust.Shared.GameStates;
-
 namespace Content.Shared._FinalStand.Engineering;
 
-[RegisterComponent, NetworkedComponent]
+[RegisterComponent]
 public sealed partial class FSBrokenLightComponent : Component
 {
     [DataField]
