@@ -29,13 +29,15 @@
     - state: arcade
     - state: screen_spacevillain
   - type: FSSlotMachine
+    pullSound:
+      path: /Audio/_FinalStand/Machines/SlotMachine/pull.ogg
     payouts:
     - weight: 3
       multiplier: 25
       message: fs-slots-jackpot
       popup: LargeCaution
       sound:
-        path: /Audio/Machines/vending_jingle.ogg
+        path: /Audio/_FinalStand/Machines/SlotMachine/jackpot.ogg
     - weight: 12
       multiplier: 8
       message: fs-slots-big
