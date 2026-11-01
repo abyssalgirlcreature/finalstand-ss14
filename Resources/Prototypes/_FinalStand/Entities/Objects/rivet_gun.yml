@@ -9,8 +9,14 @@
     sprite: _FinalStand/Objects/Tools/rivet_gun.rsi
     state: icon
   - type: Item
-    size: Normal
+    size: Small
     sprite: _FinalStand/Objects/Tools/rivet_gun.rsi
+  - type: Clothing
+    sprite: _FinalStand/Objects/Tools/rivet_gun.rsi
+    quickEquip: false
+    slots:
+    - suitStorage
+    - Belt
   - type: Gun
     fireRate: 3
     projectileSpeed: 25
