@@ -1,4 +1,5 @@
-fs-cmo-panel-title = MEDICAL COMMAND
+fs-cmo-group-directive = DIRECTIVE
+fs-cmo-group-command = COMMAND
 
 fs-cmo-mcp-name = Mass Casualty Protocol
 fs-cmo-mcp-short = Mass Casualty
@@ -52,5 +53,4 @@ fs-cmo-doctrine-short = Triage Doctrine
 
 fs-cmo-dividend = Dividend
 fs-cmo-dividend-name = Department Dividend
-fs-cmo-dividend-effects = Converts $1,500 of department funds into $1,200 split across every medic on duty.
-fs-cmo-dividend-short = Dividend
+fs-cmo-dividend-effects = Converts $1,500 of department funds into $1,800 split across every medic on duty.

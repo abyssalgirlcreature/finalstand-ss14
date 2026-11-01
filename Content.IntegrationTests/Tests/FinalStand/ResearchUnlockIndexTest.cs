@@ -12,6 +12,9 @@ namespace Content.IntegrationTests.Tests.FinalStand;
 [TestFixture]
 public sealed class ResearchUnlockIndexTest : GameTest
 {
+    // Station research is round state; a fast-recycled pair would hand these unlocks to the next test.
+    public override PoolSettings PoolSettings => new() { Connected = true, Dirty = true };
+
     [Test]
     public async Task IndexAgreesWithTheUnlockedListThroughEveryTransition()
     {
@@ -24,7 +27,10 @@ public sealed class ResearchUnlockIndexTest : GameTest
             var research = entityManager.System<FSResearchSystem>();
             var station = research.GetOrCreateStation();
 
-            var sample = prototypes.EnumeratePrototypes<FSTechNodePrototype>().Take(3).ToList();
+            var sample = prototypes.EnumeratePrototypes<FSTechNodePrototype>()
+                .Where(node => !FSMedicalResearchSystem.IsMedicalNode(node))
+                .Take(3)
+                .ToList();
             Assert.That(sample, Is.Not.Empty, "no research nodes to test against");
 
             foreach (var node in sample)

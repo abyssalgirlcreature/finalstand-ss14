@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Content.Shared._FinalStand.Perks;
 
 public enum FSArchetypeTier : byte
@@ -63,24 +65,34 @@ public static class FSArchetypeRules
     public static FSArchetypeBonus Bonus(FSArchetype archetype)
     {
         if (archetype.Tier == FSArchetypeTier.Rainbow)
-            return new FSArchetypeBonus(1.04f, 0.96f, 1.03f, 1.06f);
+            return new FSArchetypeBonus(FSPerkBonusConstants.PrismDamage, FSPerkBonusConstants.PrismDamageTaken,
+                FSPerkBonusConstants.PrismSpeed, FSPerkBonusConstants.PrismCredits);
 
         var keystone = archetype.Tier == FSArchetypeTier.Keystone;
         return archetype.Tier == FSArchetypeTier.None ? FSArchetypeBonus.None : archetype.Category switch
         {
-            PerkCategory.Red => new FSArchetypeBonus(keystone ? 1.2f : 1.08f, 1f, 1f, 1f),
-            PerkCategory.Blue => new FSArchetypeBonus(1f, keystone ? 0.8f : 0.92f, 1f, 1f),
-            PerkCategory.Green => new FSArchetypeBonus(1f, 1f, keystone ? 1.15f : 1.06f, 1f),
-            PerkCategory.Yellow => new FSArchetypeBonus(1f, 1f, 1f, keystone ? 1.3f : 1.12f),
+            PerkCategory.Red => new FSArchetypeBonus(
+                keystone ? FSPerkBonusConstants.KeystoneSlayerDamage : FSPerkBonusConstants.ArchetypeSlayerDamage, 1f, 1f, 1f),
+            PerkCategory.Blue => new FSArchetypeBonus(1f,
+                keystone ? FSPerkBonusConstants.KeystoneBulwarkDamageTaken : FSPerkBonusConstants.ArchetypeBulwarkDamageTaken, 1f, 1f),
+            PerkCategory.Green => new FSArchetypeBonus(1f, 1f,
+                keystone ? FSPerkBonusConstants.KeystoneOperatorSpeed : FSPerkBonusConstants.ArchetypeOperatorSpeed, 1f),
+            PerkCategory.Yellow => new FSArchetypeBonus(1f, 1f, 1f,
+                keystone ? FSPerkBonusConstants.KeystoneTycoonCredits : FSPerkBonusConstants.ArchetypeTycoonCredits),
             PerkCategory.Purple => keystone
-                ? new FSArchetypeBonus(1.08f, 0.92f, 1.05f, 1.08f)
-                : new FSArchetypeBonus(1.03f, 0.97f, 1.02f, 1.03f),
+                ? new FSArchetypeBonus(FSPerkBonusConstants.KeystoneSpecialistBonus, FSPerkBonusConstants.KeystoneSpecialistDamageTaken,
+                    FSPerkBonusConstants.KeystoneSpecialistSpeed, FSPerkBonusConstants.KeystoneSpecialistBonus)
+                : new FSArchetypeBonus(FSPerkBonusConstants.ArchetypeSpecialistBonus, FSPerkBonusConstants.ArchetypeSpecialistDamageTaken,
+                    FSPerkBonusConstants.ArchetypeSpecialistSpeed, FSPerkBonusConstants.ArchetypeSpecialistBonus),
             _ => FSArchetypeBonus.None,
         };
     }
 
     public static string NameLocId(FSArchetype archetype)
         => archetype.Tier == FSArchetypeTier.Rainbow ? "fs-archetype-prism" : NameLocId(archetype.Category);
+
+    public static string EffectLocId(FSArchetype archetype)
+        => archetype.Tier == FSArchetypeTier.Rainbow ? "fs-archetype-prism-effect" : EffectLocId(archetype.Category);
 
     public static string NameLocId(PerkCategory category) => category switch
     {
@@ -91,15 +103,25 @@ public static class FSArchetypeRules
         _ => "fs-archetype-specialist",
     };
 
-    public static string CategoryLocId(PerkCategory category) => category switch
+    public static string EffectLocId(PerkCategory category) => category switch
     {
-        PerkCategory.Red => "fs-archetype-category-offense",
-        PerkCategory.Blue => "fs-archetype-category-defense",
-        PerkCategory.Green => "fs-archetype-category-utility",
-        PerkCategory.Yellow => "fs-archetype-category-economy",
-        _ => "fs-archetype-category-hybrid",
+        PerkCategory.Red => "fs-archetype-slayer-effect",
+        PerkCategory.Blue => "fs-archetype-bulwark-effect",
+        PerkCategory.Green => "fs-archetype-operator-effect",
+        PerkCategory.Yellow => "fs-archetype-tycoon-effect",
+        _ => "fs-archetype-specialist-effect",
     };
 
-    public static string EffectLocId(FSArchetype archetype)
-        => $"{NameLocId(archetype)}-{(archetype.Tier == FSArchetypeTier.Keystone ? "keystone" : "effect")}";
+    // Whole percentages for the effect line; the keystone quotes its bigger numbers through the same args.
+    public static (string, object)[] EffectArgs(FSArchetypeBonus bonus) =>
+    [
+        ("damage", Percent(bonus.Damage - 1f)),
+        ("resist", Percent(1f - bonus.DamageTaken)),
+        ("speed", Percent(bonus.Speed - 1f)),
+        ("credits", Percent(bonus.Credits - 1f)),
+    ];
+
+    // Not Convert: the client sandbox doesn't allow it.
+    private static string Percent(float fraction)
+        => ((double) fraction * 100).ToString("0.##", CultureInfo.InvariantCulture);
 }

@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Content.Shared._FinalStand.Ailments;
 using Robust.Shared.Audio;
 using Robust.Shared.GameStates;
 using Robust.Shared.Prototypes;
@@ -7,7 +8,7 @@ using Robust.Shared.Serialization;
 namespace Content.Shared._FinalStand.Mobs;
 
 // three-move boss kit: an aerial gap-closer, a lane-clearing throw and a short punishing dash
-[RegisterComponent, NetworkedComponent, AutoGenerateComponentState]
+[RegisterComponent, NetworkedComponent, AutoGenerateComponentState, AutoGenerateComponentPause]
 public sealed partial class FSGiantAbilitiesComponent : Component
 {
     [DataField]
@@ -58,6 +59,9 @@ public sealed partial class FSGiantAbilitiesComponent : Component
     public float SkyJumpDamage = 90f;
 
     [DataField]
+    public FSInjurySpec SkyJumpInjury = new() { Fracture = true };
+
+    [DataField]
     public float SkyJumpKnockbackDistance = 6f;
 
     [DataField]
@@ -89,6 +93,9 @@ public sealed partial class FSGiantAbilitiesComponent : Component
 
     [DataField]
     public float DashDamage = 75f;
+
+    [DataField]
+    public FSInjurySpec DashInjury = new() { Fracture = true };
 
     [DataField]
     public float DashHitRadius = 1.6f;
@@ -136,11 +143,11 @@ public sealed partial class FSGiantAbilitiesComponent : Component
     public bool Airborne;
 
     public FSGiantAbility Current = FSGiantAbility.None;
-    public TimeSpan PhaseEnd;
-    public TimeSpan NextAbility;
-    public TimeSpan NextSkyJump;
-    public TimeSpan NextBoulder;
-    public TimeSpan NextDash;
+    [AutoPausedField] public TimeSpan PhaseEnd;
+    [AutoPausedField] public TimeSpan NextAbility;
+    [AutoPausedField] public TimeSpan NextSkyJump;
+    [AutoPausedField] public TimeSpan NextBoulder;
+    [AutoPausedField] public TimeSpan NextDash;
     public Vector2 LockedTarget;
     public Vector2 DashOrigin;
     public Vector2 DashLanding;

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Content.Client._FinalStand.Interface;
 using Content.Shared._FinalStand.Leveling;
 using Content.Shared._FinalStand.MedicalOps;
@@ -13,6 +14,7 @@ using Content.Client._FinalStand.MedicalOps;
 using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.GameTicking;
 using Robust.Client.Player;
+using Robust.Client.ResourceManagement;
 using Content.Client.UserInterface.Screens;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
@@ -27,33 +29,30 @@ public sealed partial class WaveHudSystem : EntitySystem
     [Dependency] private IPlayerManager _player = default!;
     [Dependency] private IGameTiming _timing = default!;
     [Dependency] private IUserInterfaceManager _ui = default!;
+    [Dependency] private IResourceCache _resources = default!;
     [Dependency] private SharedSolutionContainerSystem _solutions = default!;
 
     private WaveHudOverlay? _overlay;
-    private List<FSPerkTimedBuff> _perkBuffs = new();
+    private readonly List<(FSPerkTimedBuff Buff, string Label)> _perkBuffs = new();
 
     public override void Initialize()
     {
         base.Initialize();
-        SubscribeNetworkEvent<WaveCounterUpdateEvent>(OnWaveUpdate);
+        InitializeWeaponText();
+        InitializeVitalsText();
         SubscribeNetworkEvent<WalletUpdatedEvent>(OnWalletUpdate);
-        SubscribeNetworkEvent<FSEnemyCountEvent>(OnEnemyCount);
         SubscribeNetworkEvent<FSPerksStateEvent>(OnPerksState);
-        SubscribeNetworkEvent<FSPrepTimerUpdateEvent>(OnPrepTimer);
-        SubscribeNetworkEvent<WavePhaseChangedEvent>(OnPhaseChanged);
         SubscribeNetworkEvent<FSReadyUpStateEvent>(OnReadyUpState);
         SubscribeNetworkEvent<FSPerkStacksUpdateEvent>(OnPerkStacksUpdate);
-        SubscribeNetworkEvent<FSPerkTimedBuffsEvent>(ev => _perkBuffs = ev.Buffs);
+        SubscribeNetworkEvent<FSPerkTimedBuffsEvent>(OnPerkTimedBuffs);
         SubscribeNetworkEvent<FSPerkEarningsSummaryEvent>(OnPerkEarnings);
         SubscribeNetworkEvent<FSHealPayoutEvent>(OnHealPayout);
         SubscribeNetworkEvent<FSMedicalFundUpdatedEvent>(OnMedicalFund);
         SubscribeNetworkEvent<FSMedicalStatusEvent>(OnMedicalStatus);
         SubscribeNetworkEvent<FSPlayerBonusSummaryEvent>(OnBonusSummary);
-        SubscribeNetworkEvent<FSDarkWaveStartedEvent>(OnDarkWaveStarted);
-        SubscribeNetworkEvent<FSDarkWaveEndedEvent>(OnDarkWaveEnded);
         SubscribeNetworkEvent<FSRespawnOfferEvent>(OnRespawnOffer);
         SubscribeNetworkEvent<FSWaveObjectiveStateEvent>(OnObjectiveState);
-        SubscribeLocalEvent<RoundRestartCleanupEvent>(OnRoundRestart);
+        SubscribeNetworkEvent<RoundRestartCleanupEvent>(OnRoundRestart);
         SubscribeLocalEvent<LocalPlayerAttachedEvent>(OnLocalPlayerAttached);
     }
 
@@ -62,6 +61,17 @@ public sealed partial class WaveHudSystem : EntitySystem
         var overlay = EnsureOverlay();
         overlay.DirectiveFlashColour = colour;
         overlay.DirectiveFlash = 1f;
+    }
+
+    // The server only sends when the set changes, so labels are built here rather than on every refresh.
+    private void OnPerkTimedBuffs(FSPerkTimedBuffsEvent ev)
+    {
+        _perkBuffs.Clear();
+        foreach (var buff in ev.Buffs)
+        {
+            var value = buff.Percent.ToString("0.#", CultureInfo.InvariantCulture);
+            _perkBuffs.Add((buff, Loc.GetString(buff.Label, ("value", value))));
+        }
     }
 
     private void OnHealPayout(FSHealPayoutEvent ev)
@@ -77,46 +87,72 @@ public sealed partial class WaveHudSystem : EntitySystem
         overlay.IsMedicalStaff = ev.IsMedical;
     }
 
-    private void OnDarkWaveStarted(FSDarkWaveStartedEvent ev)
-    {
-        var overlay = EnsureOverlay();
-        overlay.IsDarkWave = true;
-        overlay.DarkWaveSecondsRemaining = ev.DurationSeconds;
-    }
-
-    private void OnDarkWaveEnded(FSDarkWaveEndedEvent ev)
-    {
-        var overlay = EnsureOverlay();
-        overlay.IsDarkWave = false;
-        overlay.DarkWaveSecondsRemaining = 0f;
-    }
+    private static readonly TimeSpan DataRefreshInterval = TimeSpan.FromSeconds(0.05);
+    private TimeSpan _nextDataRefresh;
 
     public override void FrameUpdate(float frameTime)
     {
         base.FrameUpdate(frameTime);
 
+        // The HUD appears with the first wave state, or the first per-player update, whichever comes first.
         if (_overlay is not { } overlay)
-            return;
+        {
+            var waves = EntityQueryEnumerator<FSWaveStateComponent>();
+            if (!waves.MoveNext(out _))
+                return;
 
-        UpdateCasualtyStatus(overlay);
-        UpdateBuffStatus(overlay);
-        UpdateHarvestStatus(overlay);
-        UpdateVitals(overlay);
-        UpdateWeapon(overlay);
-        UpdateThrowables(overlay);
+            overlay = EnsureOverlay();
+        }
+
+        // Gathering these walks inventories and queries entities, so it runs at a fixed rate rather than every frame.
+        if (_timing.RealTime >= _nextDataRefresh)
+        {
+            _nextDataRefresh = _timing.RealTime + DataRefreshInterval;
+            UpdateCasualtyStatus(overlay);
+            UpdateBuffStatus(overlay);
+            UpdateHarvestStatus(overlay);
+            UpdateVitals(overlay);
+            UpdateWeapon(overlay);
+            UpdateThrowables(overlay);
+            UpdateTriage(overlay);
+        }
+
+        UpdateWaveState(overlay);
         UpdateDownedDim(overlay);
+        UpdateDownedPrompt(overlay);
         UpdateAlertsAnchor(overlay);
         UpdateChatClearance(overlay);
-        UpdateTriage(overlay);
         UpdateObjective(overlay);
+    }
 
-        if (!overlay.IsDarkWave)
+    // The server keeps this on the wave rule entity; timers count down against our own clock.
+    private void UpdateWaveState(WaveHudOverlay overlay)
+    {
+        var query = EntityQueryEnumerator<FSWaveStateComponent>();
+        if (!query.MoveNext(out var state))
+        {
+            overlay.IsPrepPhase = false;
+            overlay.IsReadyUpVisible = false;
+            overlay.IsDarkWave = false;
+            overlay.EnemiesTotal = 0;
             return;
+        }
 
-        overlay.DarkWaveSecondsRemaining = Math.Max(0f, overlay.DarkWaveSecondsRemaining - frameTime);
+        var prep = state.Phase == WavePhase.Prep;
+        var secondsLeft = Math.Max(0f, (float) (state.PhaseEndsAt - _timing.CurTime).TotalSeconds);
+
+        overlay.CurrentWave = state.Wave;
+        overlay.IsPrepPhase = prep;
+        overlay.IsReadyUpVisible = prep;
+        overlay.PrepSecondsRemaining = prep ? secondsLeft : -1f;
+        overlay.IsDarkWave = state.DarkWave;
+        overlay.DarkWaveSecondsRemaining = state.DarkWave ? secondsLeft : 0f;
+        overlay.EnemiesAlive = state.EnemiesAlive;
+        overlay.EnemiesTotal = state.EnemiesTotal;
     }
 
     private const float DownedDim = 0.22f;
+    private FSDownedPrompt? _downedPrompt;
 
     // A round can end while you're down, leaving the offer set as the lobby becomes the active screen.
     private void UpdateDownedDim(WaveHudOverlay overlay)
@@ -129,16 +165,43 @@ public sealed partial class WaveHudSystem : EntitySystem
             : Color.White;
     }
 
+    private void UpdateDownedPrompt(WaveHudOverlay overlay)
+    {
+        if (!overlay.IsRespawnOfferVisible || _ui.ActiveScreen is not InGameScreen)
+        {
+            if (_downedPrompt != null)
+                _downedPrompt.Visible = false;
+            return;
+        }
+
+        if (_downedPrompt == null)
+        {
+            _downedPrompt = new FSDownedPrompt(_resources);
+            _downedPrompt.OnRevive += SendRespawnRequest;
+        }
+
+        if (_downedPrompt.Parent == null)
+            _ui.PopupRoot.AddChild(_downedPrompt);
+
+        _downedPrompt.Visible = true;
+        _downedPrompt.Update(overlay.RespawnCost, overlay.CasualtyStatus, overlay.CasualtyResponded);
+    }
+
     private void OnRoundRestart(RoundRestartCleanupEvent ev)
     {
-        _perkBuffs = new();
+        _perkBuffs.Clear();
         _objective = null;
         if (_overlay != null)
+        {
             _overlay.IsRespawnOfferVisible = false;
+            // Stacks live on the mind, so a new round starts at zero without the server saying so.
+            _overlay.PerkStacks.Clear();
+        }
     }
 
     private Control? _alerts;
     private Control? _alertsScreen;
+    private float? _alertsLift;
 
     private void UpdateAlertsAnchor(WaveHudOverlay overlay)
     {
@@ -149,12 +212,18 @@ public sealed partial class WaveHudSystem : EntitySystem
         {
             _alertsScreen = screen;
             _alerts = FindByName(screen, "Alerts", 0);
+            _alertsLift = null;
         }
 
         if (_alerts is null || FSClassicHud.Enabled)
             return;
 
+        // Every frame; a margin write rearranges the screen even when it's the same value.
         var lift = WaveHudOverlay.BottomBandLift + overlay.VitalsBlockHeight() + 6f;
+        if (_alertsLift == lift)
+            return;
+
+        _alertsLift = lift;
         LayoutContainer.SetMarginTop(_alerts, -lift);
         LayoutContainer.SetMarginBottom(_alerts, -lift);
     }
@@ -241,13 +310,13 @@ public sealed partial class WaveHudSystem : EntitySystem
         overlay.MedicalBuffs.Clear();
 
         var now = _timing.CurTime;
-        foreach (var buff in _perkBuffs)
+        foreach (var (buff, label) in _perkBuffs)
         {
             if (now >= buff.EndTime)
                 continue;
 
             overlay.MedicalBuffs.Add(new WaveHudOverlay.MedicalBuffRow(
-                buff.Name,
+                label,
                 WaveHudOverlay.PerkIconPrefix + buff.PerkId.ToLowerInvariant(),
                 (int) Math.Ceiling((buff.EndTime - now).TotalSeconds),
                 [Loc.GetString("fs-buff-source-perk")]));
@@ -327,10 +396,12 @@ public sealed partial class WaveHudSystem : EntitySystem
         if (_overlay != null)
         {
             _overlay.OnReadyUpClicked -= SendReadyRequest;
-            _overlay.OnRespawnClicked -= SendRespawnRequest;
             _overlayManager.RemoveOverlay(_overlay);
             _overlay = null;
         }
+
+        _downedPrompt?.Orphan();
+        _downedPrompt = null;
     }
 
     // Sent on attach rather than on connect: at connect the client is still on tick 1 while the
@@ -350,7 +421,6 @@ public sealed partial class WaveHudSystem : EntitySystem
             return _overlay;
         _overlay = new WaveHudOverlay();
         _overlay.OnReadyUpClicked += SendReadyRequest;
-        _overlay.OnRespawnClicked += SendRespawnRequest;
         _overlay.OnThrowableCycle += OnThrowableCycle;
         _overlayManager.AddOverlay(_overlay);
         return _overlay;
@@ -373,21 +443,9 @@ public sealed partial class WaveHudSystem : EntitySystem
         overlay.RespawnCost = ev.Cost;
     }
 
-    private void OnWaveUpdate(WaveCounterUpdateEvent ev)
-    {
-        EnsureOverlay().CurrentWave = ev.Wave;
-    }
-
     private void OnWalletUpdate(WalletUpdatedEvent ev)
     {
         EnsureOverlay().CurrentCredits = ev.Credits;
-    }
-
-    private void OnEnemyCount(FSEnemyCountEvent ev)
-    {
-        var overlay = EnsureOverlay();
-        overlay.EnemiesAlive = ev.Alive;
-        overlay.EnemiesTotal = ev.Total;
     }
 
     private void OnPerksState(FSPerksStateEvent ev)
@@ -395,18 +453,6 @@ public sealed partial class WaveHudSystem : EntitySystem
         var overlay = EnsureOverlay();
         overlay.ActiveSlots   = ev.Slots;
         overlay.PerkLevels = ev.Levels;
-    }
-
-    private void OnPrepTimer(FSPrepTimerUpdateEvent ev)
-    {
-        var overlay = EnsureOverlay();
-        overlay.IsPrepPhase = ev.IsPrepPhase;
-        overlay.PrepSecondsRemaining = ev.SecondsRemaining;
-    }
-
-    private void OnPhaseChanged(WavePhaseChangedEvent ev)
-    {
-        EnsureOverlay().IsReadyUpVisible = ev.IsPrepPhase;
     }
 
     private void OnReadyUpState(FSReadyUpStateEvent ev)

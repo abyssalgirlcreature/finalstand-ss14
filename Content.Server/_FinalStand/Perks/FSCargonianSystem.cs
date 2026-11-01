@@ -6,11 +6,10 @@ using Robust.Shared.Timing;
 
 namespace Content.Server._FinalStand.Perks;
 
-// Owns (FSCargonianBodyComponent, RefreshMovementSpeedModifiersEvent) — counters pulling drag penalty.
+// Counters the pulling drag penalty.
 public sealed partial class FSCargonianSystem : EntitySystem
 {
     [Dependency] private SharedMindSystem _mind = default!;
-    [Dependency] private MovementSpeedModifierSystem _movement = default!;
 
     private static readonly float[] Counters = [1.018f, 1.034f, 1.053f, 1.053f];
     private static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(3);
@@ -21,7 +20,7 @@ public sealed partial class FSCargonianSystem : EntitySystem
     public override void Initialize()
     {
         base.Initialize();
-        SubscribeLocalEvent<FSCargonianBodyComponent, RefreshMovementSpeedModifiersEvent>(OnRefreshSpeed);
+        SubscribeLocalEvent<FSCargonianBodyComponent, RefreshMovementSpeedModifiersEvent>(OnRefreshSpeed, after: [typeof(FSPackMuleSystem)]);
     }
 
     public override void Update(float frameTime)

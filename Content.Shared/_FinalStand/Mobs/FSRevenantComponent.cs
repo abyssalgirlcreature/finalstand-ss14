@@ -1,8 +1,9 @@
+using Content.Shared._FinalStand.Ailments;
 using Robust.Shared.GameStates;
 
 namespace Content.Shared._FinalStand.Mobs;
 
-[RegisterComponent, NetworkedComponent]
+[RegisterComponent, NetworkedComponent, AutoGenerateComponentPause]
 public sealed partial class FSRevenantComponent : Component
 {
     [DataField] public float TargetSearchRange = 100f;
@@ -40,6 +41,7 @@ public sealed partial class FSRevenantComponent : Component
     [DataField] public float GrabLandDistance = 1f;
     [DataField] public float GrabPullSpeed = 16f;
     [DataField] public float GrabDamage = 4.41f;
+    [DataField] public FSInjurySpec GrabInjury = new() { Fracture = true, IgnoreFloor = true };
     [DataField] public float GrabPauseDuration = 0.6f;
 
     [DataField] public float BindCooldown = 10f;
@@ -52,6 +54,7 @@ public sealed partial class FSRevenantComponent : Component
     [DataField] public float SweepArcDegrees = 90f;
     [DataField] public float SliceHitDelay = 0.25f;
     [DataField] public float SliceDamage = 19.845f;
+    [DataField] public FSInjurySpec SliceInjury = new() { Bleed = 2 };
 
     [DataField] public float ExecuteHealthThreshold = 0.30f;
     [DataField] public float ExecuteWindupDuration = 0.4f;
@@ -83,10 +86,10 @@ public sealed partial class FSRevenantComponent : Component
     public EntityUid? CurrentTarget;
 
     public bool OrbitClockwise;
-    public TimeSpan MarkedAt;
+    [AutoPausedField] public TimeSpan MarkedAt;
     public int LightStunCount;
-    public TimeSpan LightStunWindowEnd;
-    public TimeSpan LightStunImmuneUntil;
+    [AutoPausedField] public TimeSpan LightStunWindowEnd;
+    [AutoPausedField] public TimeSpan LightStunImmuneUntil;
 
     public FSRevenantPhase Phase = FSRevenantPhase.Stalk;
     public float PhaseAccum;

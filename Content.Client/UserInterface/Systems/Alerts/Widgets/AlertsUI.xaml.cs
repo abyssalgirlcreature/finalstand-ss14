@@ -15,9 +15,9 @@ public sealed partial class AlertsUI : UIWidget
 {
     private readonly Dictionary<AlertKey, AlertControl> _alertControls = new();
 
-    private static readonly HashSet<string> Suppressed = new() { "HumanHealth" };
+    private static readonly HashSet<string> Suppressed = new() { "HumanHealth", "Bleed" };
 
-    private readonly bool _classic = FSClassicHud.Enabled;
+    private readonly bool _classic = FSClassicHud.Enabled; // FINALSTAND
 
     public AlertsUI()
     {

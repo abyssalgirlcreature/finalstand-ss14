@@ -2,14 +2,16 @@ using System.Collections.Frozen;
 using Content.Server.Administration.Logs;
 using Content.Server._FinalStand.Economy;
 using Content.Shared.Mind;
+using Content.Shared.Mobs.Systems;
 using Content.Server._FinalStand.Research;
 using Content.Shared.Database;
 using Content.Server.Radio.EntitySystems;
+using Content.Shared._FinalStand.Ailments;
 using Content.Shared._FinalStand.MedicalOps;
 using Content.Shared.GameTicking;
+using Content.Shared.Mobs;
 using Content.Shared.Radio;
 using Content.Shared.Popups;
-using Robust.Server.Player;
 using Robust.Shared.Audio;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Prototypes;
@@ -23,7 +25,6 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
     [Dependency] private FSMedicalRosterSystem _roster = default!;
     [Dependency] private SharedPopupSystem _popup = default!;
     [Dependency] private RadioSystem _radio = default!;
-    [Dependency] private IPlayerManager _player = default!;
     [Dependency] private IGameTiming _timing = default!;
     [Dependency] private SharedAudioSystem _audio = default!;
     [Dependency] private FSMedicalUpgradeSystem _upgrades = default!;
@@ -31,6 +32,8 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
     [Dependency] private FSMedicalFundSystem _fund = default!;
     [Dependency] private FSPlayerWalletSystem _wallet = default!;
     [Dependency] private SharedMindSystem _mind = default!;
+    [Dependency] private MobStateSystem _mobState = default!;
+    [Dependency] private FSAilmentSystem _ailments = default!;
 
     private static readonly SoundSpecifier DirectiveSound =
         new SoundPathSpecifier("/Audio/_FinalStand/MedicalOps/directive.ogg");
@@ -51,6 +54,7 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
     };
 
     private static readonly TimeSpan MobilisationDuration = TimeSpan.FromSeconds(20);
+    private const float PharmaWardScale = 1.5f;
     private static readonly TimeSpan DirectiveCooldown = TimeSpan.FromSeconds(60);
 
     private static readonly FrozenDictionary<FSMedicalDirective, DirectiveDef> Directives = new Dictionary<FSMedicalDirective, DirectiveDef>()
@@ -97,7 +101,8 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
     private void SetActiveDirective(FSMedicalDirective? directive)
     {
         _activeDirective = directive;
-        RefreshDoctrine();
+        _ailments.SetFieldOps(directive == FSMedicalDirective.FieldOps);
+        _ailments.SetWardScale(directive == FSMedicalDirective.Pharma ? PharmaWardScale : 1f);
 
         var query = EntityQueryEnumerator<FSCmoPanelComponent>();
         while (query.MoveNext(out var uid, out var panel))
@@ -118,6 +123,21 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
 
         SubscribeNetworkEvent<FSCmoAbilityRequestEvent>(OnPanelRequest);
         SubscribeLocalEvent<FSResearchNodeCompletedEvent>(OnResearchCompleted);
+        SubscribeLocalEvent<MobStateChangedEvent>(OnMobStateChanged);
+    }
+
+    private void OnMobStateChanged(MobStateChangedEvent ev)
+    {
+        if (_activeDirective != FSMedicalDirective.Trauma
+            || ev.OldMobState != MobState.Critical
+            || ev.NewMobState != MobState.Alive
+            || ev.Origin is not { } medic
+            || !_roster.IsMedical(medic))
+        {
+            return;
+        }
+
+        _ailments.StopBleeding(ev.Target, medic, FSCureKind.Rider);
     }
 
     private void OnRoundRestart(RoundRestartCleanupEvent args)
@@ -125,7 +145,7 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
         SetActiveDirective(null);
     }
 
-    private void OnResearchCompleted(FSResearchNodeCompletedEvent ev)
+    private void OnResearchCompleted(ref FSResearchNodeCompletedEvent ev)
     {
         if (ev.NodeId == FSMedicalUpgradeSystem.DepartmentDividend)
         {
@@ -145,18 +165,15 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
 
     private void RefreshDoctrine()
     {
-        if (!_upgrades.Unlocked(FSMedicalUpgradeSystem.TriageDoctrine))
-            return;
-
-        if (_activeDirective == null)
-            RemoveFromDepartment(DoctrineSource);
-        else
+        if (_upgrades.Unlocked(FSMedicalUpgradeSystem.TriageDoctrine))
             ApplyToDepartment(DoctrineSource, DoctrineBonuses, name: Loc.GetString("fs-cmo-doctrine-short"));
     }
 
     private void OnPanelRequest(FSCmoAbilityRequestEvent ev, EntitySessionEventArgs args)
     {
-        if (args.SenderSession.AttachedEntity is not { } cmo || !HasComp<FSCmoPanelComponent>(cmo))
+        if (args.SenderSession.AttachedEntity is not { } cmo
+            || !HasComp<FSCmoPanelComponent>(cmo)
+            || _mobState.IsIncapacitated(cmo))
             return;
 
         switch (ev.Ability)
@@ -195,7 +212,7 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
 
     private void OnPlayerSpawned(PlayerSpawnCompleteEvent ev)
     {
-        if (ev.JobId == FSMedicalRosterSystem.CmoJob)
+        if (ev.JobId == FSMedicalRosterSystem.CmoJob.Id)
         {
             var panel = EnsureComp<FSCmoPanelComponent>(ev.Mob);
             panel.ActiveDirective = _activeDirective;
@@ -203,9 +220,7 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
             Dirty(ev.Mob, panel);
         }
 
-        if (_activeDirective != null
-            && _upgrades.Unlocked(FSMedicalUpgradeSystem.TriageDoctrine)
-            && _roster.IsMedical(ev.Mob))
+        if (_upgrades.Unlocked(FSMedicalUpgradeSystem.TriageDoctrine) && _roster.IsMedical(ev.Mob))
         {
             _bonus.ApplyBuff(ev.Mob, DoctrineSource, DoctrineBonuses, name: Loc.GetString("fs-cmo-doctrine-short"));
         }
@@ -219,8 +234,9 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
         }
     }
 
-    private const int DividendFundCost = 1500;
-    private const int DividendPayout = 1800;
+    // fs-cmo-dividend-effects quotes both numbers; CmoDividendTextTest keeps them in step.
+    public const int DividendFundCost = 1500;
+    public const int DividendPayout = 1800;
     private static readonly TimeSpan DividendCooldown = TimeSpan.FromSeconds(300);
 
     private void RunDividend(EntityUid performer)
@@ -295,7 +311,7 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
         if (_activeDirective == directive)
         {
             SetActiveDirective(null);
-            RemoveFromDepartment(DirectiveSource);
+            _bonus.RemoveBuffFromAll(DirectiveSource);
             Announce(performer, "fs-cmo-directive-stand-down", standDown: true);
 
             if (panel != null)
@@ -331,15 +347,6 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
     {
         foreach (var (_, mob) in _roster.Medics())
             _bonus.ApplyBuff(mob, source, bonuses, duration, name);
-    }
-
-    private void RemoveFromDepartment(string source)
-    {
-        foreach (var session in _player.Sessions)
-        {
-            if (session.AttachedEntity is { } mob)
-                _bonus.RemoveBuff(mob, source);
-        }
     }
 
     private void Announce(EntityUid performer, string key, bool standDown = false)

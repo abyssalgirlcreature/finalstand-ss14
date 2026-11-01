@@ -43,7 +43,9 @@ public sealed partial class GibActionSystem : EntitySystem
         }
 
         // If they aren't given the action, remove it.
-        _actionsSystem.RemoveAction(uid, comp.ActionEntity);
+        // FINALSTAND: only if it's still attached. A revive goes dead -> crit -> alive, crit already took it away,
+        // and removing a detached action logs an error.
+        _actionsSystem.RemoveAction(comp.ActionEntity);
     }
 
     private void OnGibAction(EntityUid uid, GibActionComponent comp, GibActionEvent args)

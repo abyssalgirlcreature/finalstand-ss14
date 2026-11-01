@@ -1,4 +1,4 @@
-using Content.Server._FinalStand.GameTicking.Rules;
+using Content.Server._FinalStand.Leveling;
 using Content.Server._FinalStand.Weapons;
 using Content.Shared._FinalStand.Command;
 using Content.Shared.Damage;
@@ -20,10 +20,10 @@ public sealed partial class FSAnalyticalMindSystem : EntitySystem
     public override void Initialize()
     {
         base.Initialize();
-        SubscribeLocalEvent<FSEnemyDamageTrackingComponent, DamageChangedEvent>(OnEnemyDamaged);
+        SubscribeLocalEvent<FSEnemyDamageTrackerComponent, DamageChangedEvent>(OnEnemyDamaged);
     }
 
-    private void OnEnemyDamaged(Entity<FSEnemyDamageTrackingComponent> ent, ref DamageChangedEvent args)
+    private void OnEnemyDamaged(Entity<FSEnemyDamageTrackerComponent> ent, ref DamageChangedEvent args)
     {
         if (!args.DamageIncreased
             || args.DamageDelta is not { } delta

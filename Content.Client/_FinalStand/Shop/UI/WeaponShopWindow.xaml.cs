@@ -222,7 +222,8 @@ public sealed partial class WeaponShopWindow : FancyWindow
         var display = carried ?? shopEntity;
         var meta = entMan.GetComponent<MetaDataComponent>(display);
         WeaponNameLabel.Text = Capitalize(meta.EntityName);
-        PlateCategory.Text = comp.Category.ToUpperInvariant() + GripSuffix(comp.WeaponProtoId);
+        PlateCategory.Text = (comp.Category is { } category ? Loc.GetString(category).ToUpperInvariant() : string.Empty)
+                             + GripSuffix(comp.WeaponProtoId);
         DescLabel.SetMessage(FormattedMessage.FromMarkupPermissive(
             $"[color={DescText.ToHex()}]{FormattedMessage.EscapeText(meta.EntityDescription)}[/color]"));
         WeaponSprite.SetEntity(display);
@@ -242,9 +243,11 @@ public sealed partial class WeaponShopWindow : FancyWindow
             return string.Empty;
 
         if (proto.TryGetComponent<GunRequiresWieldComponent>(out _, factory))
-            return "  ·  TWO-HANDED";
+            return Loc.GetString("fs-weapon-shop-grip-two-handed");
 
-        return proto.TryGetComponent<WieldableComponent>(out _, factory) ? "  ·  WIELDABLE" : "  ·  ONE-HANDED";
+        return Loc.GetString(proto.TryGetComponent<WieldableComponent>(out _, factory)
+            ? "fs-weapon-shop-grip-wieldable"
+            : "fs-weapon-shop-grip-one-handed");
     }
 
     public void UpdateBalance(int credits)
@@ -271,14 +274,14 @@ public sealed partial class WeaponShopWindow : FancyWindow
         _sellRefund = refund;
         _owned = hasWeapon;
 
-        OwnedChipLabel.Text = hasWeapon ? "OWNED" : "NOT OWNED";
+        OwnedChipLabel.Text = hasWeapon ? Loc.GetString("fs-weapon-shop-owned") : Loc.GetString("fs-weapon-shop-not-owned");
         OwnedChipLabel.FontColorOverride = hasWeapon ? FSPerkPalette.Accent[PerkCategory.Green] : FSUiPalette.TextMuted;
         OwnedChip.PanelOverride = hasWeapon
             ? Box(FSPerkPalette.Background[PerkCategory.Green], FSPerkPalette.Edge[PerkCategory.Green], new Thickness(1))
             : Box(FSUiPalette.BgRecess, FSUiPalette.BorderNeutral, new Thickness(1));
 
         SellButton.Visible = hasWeapon;
-        NotOwnedLabel.Text = hasWeapon ? "" : "Buy and carry this weapon to upgrade it.";
+        NotOwnedLabel.Text = hasWeapon ? "" : Loc.GetString("fs-weapon-shop-not-owned-hint");
         if (!_inConfirmState)
             ExitConfirmState();
 
@@ -312,9 +315,9 @@ public sealed partial class WeaponShopWindow : FancyWindow
 
         var afford = _credits >= _price;
         BuyButton.Disabled = !afford;
-        BuyButton.Text = !afford ? $"BUY · {Money(_price)} ({Money(_price - _credits)} SHORT)"
-            : _owned ? $"BUY ANOTHER · {Money(_price)}"
-            : $"BUY · {Money(_price)}";
+        BuyButton.Text = !afford ? Loc.GetString("fs-weapon-shop-buy-short", ("price", Money(_price)), ("short", Money(_price - _credits)))
+            : _owned ? Loc.GetString("fs-weapon-shop-buy-another", ("price", Money(_price)))
+            : Loc.GetString("fs-weapon-shop-buy", ("price", Money(_price)));
 
         // Only the first purchase is the window's primary action.
         var primary = afford && !_owned;
@@ -328,7 +331,7 @@ public sealed partial class WeaponShopWindow : FancyWindow
     {
         _inConfirmState = true;
         _confirmTimer = ConfirmTimeout;
-        SellButton.Text = $"CONFIRM SELL · {Money(_sellRefund)}";
+        SellButton.Text = Loc.GetString("fs-weapon-shop-sell-confirm", ("refund", Money(_sellRefund)));
         SellButton.StyleBoxOverride = Box(Color.FromHex("#b3402f"), FSUiPalette.StateNegative, new Thickness(1), 10, 0);
         SellButton.Label.FontColorOverride = Color.White;
         KeepButton.Visible = true;
@@ -338,10 +341,10 @@ public sealed partial class WeaponShopWindow : FancyWindow
     {
         _inConfirmState = false;
         _confirmTimer = 0f;
-        SellButton.Text = $"SELL · {Money(_sellRefund)}";
+        SellButton.Text = Loc.GetString("fs-weapon-shop-sell", ("refund", Money(_sellRefund)));
         SellButton.StyleBoxOverride = Box(FSUiPalette.BgDeep, FSUiPalette.BorderNeutral, new Thickness(1), 10, 0);
         SellButton.Label.FontColorOverride = FSUiPalette.TextMuted;
-        SellButton.ToolTip = "Refunds 40% of the price and 40% of what you spent upgrading it.";
+        SellButton.ToolTip = Loc.GetString("fs-weapon-shop-sell-tooltip");
         KeepButton.Visible = false;
     }
 

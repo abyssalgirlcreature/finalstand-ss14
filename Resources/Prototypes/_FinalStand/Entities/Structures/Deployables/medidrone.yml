@@ -1,9 +1,9 @@
 - type: entity
-  id: FSMediDroneItem
   parent: BaseItem
+  id: FSMediDroneItem
+  categories: [ HideSpawnMenu ]
   name: medi-drone
   description: A folded healing drone. Deploy it and it follows you, peeling off to heal wounded allies nearby up to half health. It burns out when its charge runs dry. Press Z to aim a placement, click to deploy - or throw it (Ctrl+Q).
-  categories: [ HideSpawnMenu ]
   components:
   - type: Item
     size: Small
@@ -23,9 +23,9 @@
 
 - type: entity
   id: FSMediDroneDeployed
+  categories: [ HideSpawnMenu ]
   name: medi-drone
   description: A small healing drone. It sticks to the medic who launched it and beams wounded allies back up to half health.
-  categories: [ HideSpawnMenu ]
   components:
   - type: Sprite
     sprite: _FinalStand/Objects/Medical/medidrone.rsi
@@ -58,13 +58,12 @@
   - type: FSMediDrone
   - type: FSMediGun
     beamFromSelf: true
-    frequency: 1.0
-    maxRange: 4
-    batteryWithdraw: 1
+    pulseSeconds: 1.0
+    range: 4
+    chargePerPulse: 1
     softCapRatio: 0.5
-    boneRepairPerTick: 0.25
-    bleedingAmountModifier: 1
-    healing:
+    clotPerSecond: 0.25
+    healPerPulse:
       types:
         Blunt: -2
         Slash: -2
@@ -72,9 +71,10 @@
         Heat: -2
         Cold: -1.5
         Shock: -2
+        Caustic: -2
         Asphyxiation: -2
         Bloodloss: -2
-    soundOnTarget:
+    linkSound:
       path: /Audio/_FinalStand/Effects/medigun.ogg
   - type: Battery
     maxCharge: 20

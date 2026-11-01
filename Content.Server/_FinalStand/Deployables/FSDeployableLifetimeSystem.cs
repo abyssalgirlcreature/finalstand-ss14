@@ -36,7 +36,7 @@ public sealed partial class FSDeployableLifetimeSystem : EntitySystem
         var elapsed = TimeSpan.FromSeconds(_accumulator);
         _accumulator = 0f;
 
-        var prep = _waveRule.GetPrepComponent() != null;
+        var prep = _waveRule.IsPrep();
         var now = _timing.CurTime;
         var query = EntityQueryEnumerator<FSDeployableLifetimeComponent>();
         while (query.MoveNext(out var uid, out var comp))

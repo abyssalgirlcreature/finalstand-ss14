@@ -1,5 +1,3 @@
-// Combat mechs on the server: the pilot's factions ride with the mech so zombies go for it, guns refill from mech power,
-// and rounds fired from a mech don't hit it and pay a flat amount. A wreck unplants and takes no more damage, so it stays until repaired.
 using Content.Server.Destructible;
 using Content.Server.Mech.Systems;
 using Content.Server._FinalStand.Effects;
@@ -7,6 +5,8 @@ using Content.Shared._FinalStand.HMG;
 using Content.Shared._FinalStand.Mech;
 using Content.Shared.Mech.Components;
 using Content.Shared.Mech.Equipment.Components;
+using Content.Shared.Movement.Components;
+using Content.Shared.Movement.Systems;
 using Content.Shared.NPC.Components;
 using Content.Shared.NPC.Systems;
 using Content.Shared.Power.Components;
@@ -24,6 +24,7 @@ using Content.Shared._FinalStand.Particles;
 
 namespace Content.Server._FinalStand.Mech;
 
+// A wrecked mech unplants and takes no more damage, so it stays until repaired.
 public sealed partial class FSCombatMechSystem : EntitySystem
 {
     [Dependency] private NpcFactionSystem _faction = default!;
@@ -36,6 +37,7 @@ public sealed partial class FSCombatMechSystem : EntitySystem
     [Dependency] private FSFlairSystem _flair = default!;
     [Dependency] private FSSiegeModeSystem _siege = default!;
     [Dependency] private DamageableSystem _damageable = default!;
+    [Dependency] private SharedContentEyeSystem _eye = default!;
 
     private static readonly ProtoId<FSParticleEmitterPrototype> DustPuff = "FSDustPuff";
     private static readonly ProtoId<FSParticleEmitterPrototype> SmokeBurst = "FSSmokeBurst";
@@ -65,8 +67,24 @@ public sealed partial class FSCombatMechSystem : EntitySystem
 
     private void OnOperatorSet(Entity<FSCombatMechComponent> ent, ref VehicleOperatorSetEvent args)
     {
-        if (args.OldOperator != null)
+        if (args.OldOperator is { } oldPilot)
+        {
             _faction.ClearFactions((ent.Owner, null));
+            if (ent.Comp.PilotMaxZoom is { } maxZoom && HasComp<ContentEyeComponent>(oldPilot))
+            {
+                _eye.SetMaxZoom(oldPilot, maxZoom);
+                _eye.ResetZoom(oldPilot);
+            }
+
+            ent.Comp.PilotMaxZoom = null;
+        }
+
+        if (args.NewOperator is { } newPilot && TryComp<ContentEyeComponent>(newPilot, out var eye))
+        {
+            ent.Comp.PilotMaxZoom = eye.MaxZoom;
+            _eye.SetMaxZoom(newPilot, ent.Comp.PilotZoom, eye);
+            _eye.SetZoom(newPilot, ent.Comp.PilotZoom, eye: eye);
+        }
 
         // The open-cockpit sprite only faces south, so an empty mech faces south too and its guns match it.
         if (args.NewOperator is not { } pilot)

@@ -1,13 +1,13 @@
+using Content.Server._FinalStand.Actions;
 using Content.Server.Chat.Systems;
+using Content.Shared._FinalStand.Ailments;
 using Content.Shared._FinalStand.MedicalOps;
 using Content.Shared.Actions;
 using Content.Shared.Damage.Components;
 using Content.Shared.Damage.Systems;
-using Content.Shared.GameTicking;
 using Content.Shared.Mobs;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Mobs.Systems;
-using Robust.Server.Player;
 using Robust.Shared.Audio;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Player;
@@ -17,7 +17,7 @@ namespace Content.Server._FinalStand.MedicalOps;
 
 public sealed partial class FSMedicPingSystem : EntitySystem
 {
-    [Dependency] private SharedActionsSystem _actions = default!;
+    [Dependency] private FSGrantedActionsSystem _grants = default!;
     [Dependency] private MobStateSystem _mobState = default!;
     [Dependency] private MobThresholdSystem _thresholds = default!;
     [Dependency] private DamageableSystem _damageable = default!;
@@ -25,7 +25,7 @@ public sealed partial class FSMedicPingSystem : EntitySystem
     [Dependency] private FSCasualtySystem _casualty = default!;
     [Dependency] private FSMedicalRosterSystem _roster = default!;
     [Dependency] private SharedAudioSystem _audio = default!;
-    [Dependency] private IPlayerManager _players = default!;
+    [Dependency] private FSAilmentSystem _ailments = default!;
 
     private static readonly EntProtoId PingActionProto = "FSMedicPingAction";
     private const string ScreamEmote = "Scream";
@@ -38,14 +38,11 @@ public sealed partial class FSMedicPingSystem : EntitySystem
 
     private const float HurtThreshold = 0.3f;
 
-    private readonly Dictionary<EntityUid, EntityUid> _grantedActions = new();
-
     public override void Initialize()
     {
         base.Initialize();
         SubscribeLocalEvent<FSMedicPingActionEvent>(OnPingAction);
         SubscribeLocalEvent<PlayerAttachedEvent>(OnPlayerAttached);
-        SubscribeLocalEvent<RoundRestartCleanupEvent>(OnRoundRestart);
     }
 
     public void RequestChems(EntityUid requester)
@@ -57,15 +54,11 @@ public sealed partial class FSMedicPingSystem : EntitySystem
         _audio.PlayEntity(ChemRequestSound, _roster.MedicalFilter(), requester, true);
     }
 
+    // Ghosts and observers attach too; only a body can call for a medic.
     private void OnPlayerAttached(PlayerAttachedEvent ev)
     {
-        var mob = ev.Entity;
-        if (_grantedActions.TryGetValue(mob, out var existing) && existing.IsValid())
-            return;
-
-        var actionEnt = _actions.AddAction(mob, PingActionProto);
-        if (actionEnt != null)
-            _grantedActions[mob] = actionEnt.Value;
+        if (HasComp<MobStateComponent>(ev.Entity))
+            _grants.Grant(ev.Entity, PingActionProto);
     }
 
     private void OnPingAction(FSMedicPingActionEvent args)
@@ -83,7 +76,7 @@ public sealed partial class FSMedicPingSystem : EntitySystem
 
     private bool IsHurt(EntityUid uid)
     {
-        if (_mobState.IsIncapacitated(uid))
+        if (_mobState.IsIncapacitated(uid) || _ailments.GetPips(uid) != FSAilmentPips.None)
             return true;
 
         if (!TryComp<DamageableComponent>(uid, out var damageable)
@@ -94,10 +87,5 @@ public sealed partial class FSMedicPingSystem : EntitySystem
 
         var total = (float)_damageable.GetTotalDamage((uid, (DamageableComponent?)damageable));
         return total / critThreshold.Float() >= HurtThreshold;
-    }
-
-    private void OnRoundRestart(RoundRestartCleanupEvent ev)
-    {
-        _grantedActions.Clear();
     }
 }

@@ -16,25 +16,26 @@ namespace Content.Server._FinalStand.Mobs;
 
 public sealed partial class FSRevenantSystem
 {
-    private void ApplyAbilityDamage(EntityUid uid, FSRevenantComponent comp, EntityUid target, float amount)
+    public float DealSlash(EntityUid target, float amount, float bypass, EntityUid origin)
     {
-        var scaled = amount * GetDamageScale(uid);
-        var pierced = scaled * Math.Clamp(comp.ResistanceBypass, 0f, 1f);
-        var resisted = scaled - pierced;
+        var pierced = amount * Math.Clamp(bypass, 0f, 1f);
+        return Slash(target, amount - pierced, false, origin) + Slash(target, pierced, true, origin);
+    }
 
-        if (resisted > 0f)
-        {
-            var dmg = new DamageSpecifier();
-            dmg.DamageDict["Slash"] = FixedPoint2.New(resisted);
-            _damageable.TryChangeDamage(target, dmg, ignoreResistances: false, origin: uid);
-        }
+    private float Slash(EntityUid target, float amount, bool ignoreResistances, EntityUid origin)
+    {
+        if (amount <= 0f)
+            return 0f;
 
-        if (pierced > 0f)
-        {
-            var dmg = new DamageSpecifier();
-            dmg.DamageDict["Slash"] = FixedPoint2.New(pierced);
-            _damageable.TryChangeDamage(target, dmg, ignoreResistances: true, origin: uid);
-        }
+        var dmg = new DamageSpecifier();
+        dmg.DamageDict["Slash"] = FixedPoint2.New(amount);
+        _damageable.TryChangeDamage(target, dmg, out var landed, ignoreResistances: ignoreResistances, origin: origin);
+        return landed.GetTotal().Float();
+    }
+
+    private float ApplyAbilityDamage(EntityUid uid, FSRevenantComponent comp, EntityUid target, float amount)
+    {
+        return DealSlash(target, amount * GetDamageScale(uid), comp.ResistanceBypass, uid);
     }
 
     private float GetDamageScale(EntityUid uid)
@@ -56,7 +57,7 @@ public sealed partial class FSRevenantSystem
 
         _effects.SpawnAttached(FSRevenantEffect.Scythe, target);
 
-        Log.Debug($"[FSRevenant] {ToPrettyString(uid)} began execute on {ToPrettyString(target)} at {hpFraction:P0} hp");
+        Log.Debug($"{ToPrettyString(uid)} began execute on {ToPrettyString(target)} at {hpFraction:P0} hp");
         return true;
     }
 
@@ -133,7 +134,7 @@ public sealed partial class FSRevenantSystem
         if (targetPos.MapId != myPos.MapId
             || Vector2.Distance(myPos.Position, targetPos.Position) > comp.MeleeRange + comp.ExecuteEscapeTolerance)
         {
-            Log.Debug($"[FSRevenant] {ToPrettyString(uid)} execute aborted, {ToPrettyString(target)} escaped");
+            Log.Debug($"{ToPrettyString(uid)} execute aborted, {ToPrettyString(target)} escaped");
             Replan(uid);
             return;
         }
@@ -162,19 +163,16 @@ public sealed partial class FSRevenantSystem
     {
         if (dist > comp.MeleeRange) return false;
         if (comp.BindAccum < comp.BindCooldown) return false;
-        if (HasComp<FSRevenantBoundComponent>(target)) return false;
+        if (!_bound.TryBind(target, TimeSpan.FromSeconds(comp.BindDuration))) return false;
 
         comp.BindAccum = 0f;
-        var bound = AddComp<FSRevenantBoundComponent>(target);
-        bound.ExpiresAt = _timing.CurTime + TimeSpan.FromSeconds(comp.BindDuration);
-        Dirty(target, bound);
 
         ApplyAbilityDamage(uid, comp, target, comp.BindDamage);
 
         _effects.SpawnEffect(FSRevenantEffect.Bind, _transform.GetMapCoordinates(target));
         _effects.PlayBind(target);
 
-        Log.Debug($"[FSRevenant] {ToPrettyString(uid)} bound {ToPrettyString(target)}");
+        Log.Debug($"{ToPrettyString(uid)} bound {ToPrettyString(target)}");
         return true;
     }
 
@@ -202,7 +200,8 @@ public sealed partial class FSRevenantSystem
 
     private void DoVerticalSlice(EntityUid uid, FSRevenantComponent comp, EntityUid target, MapCoordinates targetPos)
     {
-        ApplyAbilityDamage(uid, comp, target, comp.SliceDamage);
+        var dealt = ApplyAbilityDamage(uid, comp, target, comp.SliceDamage);
+        _ailments.InflictHit(target, comp.SliceInjury, dealt, uid);
 
         _effects.SpawnAttached(FSRevenantEffect.SliceVertical, target);
         _effects.SpawnAttached(FSRevenantEffect.Hit, target, delay: comp.SliceHitDelay);
@@ -230,7 +229,8 @@ public sealed partial class FSRevenantSystem
                 && Vector2.Dot(Vector2.Normalize(toTarget), facing) < cosHalfArc)
                 continue;
 
-            ApplyAbilityDamage(uid, comp, targetUid, comp.SliceDamage);
+            var dealt = ApplyAbilityDamage(uid, comp, targetUid, comp.SliceDamage);
+            _ailments.InflictHit(targetUid, comp.SliceInjury, dealt, uid);
             _effects.SpawnAttached(FSRevenantEffect.Hit, targetUid, delay: comp.SliceHitDelay);
         }
 
@@ -267,7 +267,7 @@ public sealed partial class FSRevenantSystem
 
         _effects.PlayGrab(target);
 
-        Log.Debug($"[FSRevenant] {ToPrettyString(uid)} grabbed {ToPrettyString(target)} " +
+        Log.Debug($"{ToPrettyString(uid)} grabbed {ToPrettyString(target)} " +
                   $"(marked={comp.MarkedTarget == target})");
         return true;
     }
@@ -301,11 +301,12 @@ public sealed partial class FSRevenantSystem
         if (Vector2.Distance(myPos.Position, victimPos.Position) > comp.GrabRange
             || !_examine.InRangeUnOccluded(uid, victim, comp.GrabRange, null))
         {
-            Log.Debug($"[FSRevenant] {ToPrettyString(uid)} lost the grab on {ToPrettyString(victim)}");
+            Log.Debug($"{ToPrettyString(uid)} lost the grab on {ToPrettyString(victim)}");
             return;
         }
 
-        ApplyAbilityDamage(uid, comp, victim, comp.GrabDamage);
+        var dealt = ApplyAbilityDamage(uid, comp, victim, comp.GrabDamage);
+        _ailments.InflictHit(victim, comp.GrabInjury, dealt, uid);
 
         comp.BindAccum = comp.BindCooldown;
     }
@@ -344,7 +345,7 @@ public sealed partial class FSRevenantSystem
             _physics.SetLinearVelocity(bolt, dir * comp.BoltSpeed);
         }
 
-        Log.Debug($"[FSRevenant] {ToPrettyString(uid)} fired {comp.BoltCount} bolts at {ToPrettyString(target)}");
+        Log.Debug($"{ToPrettyString(uid)} fired {comp.BoltCount} bolts at {ToPrettyString(target)}");
         return true;
     }
 

@@ -26,9 +26,8 @@
   - Jug
   - ChemistryEmptyBottle01
   - ClothingEyesGlassesChemical
-  - BlankMediPen
   - LauncherSyringe
-  - FSChemistSyringe
+  - FSChemistSyringe # FINALSTAND
   - FSSyringePack
   - FSSplashFlask
   - FSHarvestSatchel
@@ -42,8 +41,6 @@
   - Drill
   - Saw
   - Hemostat
-  - BoneGel
-  - MedicalStitches
 
 - type: latheRecipePack
   id: MedicalStatic
@@ -101,14 +98,16 @@
 - type: latheRecipePack
   id: Chemistry
   recipes:
-  - FSEnzymeBottle
-  - FSCatalystBottle
+  - FSCatalystBottle # FINALSTAND
   - FSAdrenalBottle
   - FSAnalgesicBottle
   - FSSplashFlaskLarge
   - FSSyringePackLarge
-  - FSMedicalDispenserRestock
+  - FSMedicalDispenserRestock # FINALSTAND
   - FSFieldHospitalItem
+  - FSDefibrillatorCompact
+  - FSMedicatedSuture
+  - FSRegenerativeMesh
   - CryostasisBeaker
   - SyringeCryostasis
   - BluespaceBeaker

@@ -1,11 +1,8 @@
 using Content.Server._FinalStand.Spawners;
-using Content.Shared._FinalStand.Medical;
+using Content.Shared._FinalStand.Ailments;
 using Content.Shared._FinalStand.Perks;
 using Content.Shared._FinalStand.RiotShield;
-using Content.Shared._Shitmed.Medical.Surgery.Wounds.Systems;
 using Content.Shared.Blocking.Components;
-using Content.Shared.Body.Components;
-using Content.Shared.Body.Systems;
 using Content.Shared.Damage.Systems;
 using Content.Shared.FixedPoint;
 using Content.Shared.Mind;
@@ -21,20 +18,19 @@ public sealed partial class FSBeaconOfLightSystem : EntitySystem
     [Dependency] private EntityLookupSystem _lookup = default!;
     [Dependency] private MobStateSystem _mobState = default!;
     [Dependency] private DamageableSystem _damageable = default!;
-    [Dependency] private BloodstreamSystem _bloodstream = default!;
-    [Dependency] private WoundSystem _wounds = default!;
-    [Dependency] private OrganLookupSystem _organs = default!;
+    [Dependency] private FSAilmentSystem _ailments = default!;
     [Dependency] private SharedPointLightSystem _lights = default!;
     [Dependency] private IGameTiming _timing = default!;
 
     private static readonly Color LightColor = Color.FromHex("#FFE9A8");
+    private const float LightRadiusPadding = 1f;
+    private const float LightEnergy = 1.5f;
     private static readonly TimeSpan PulseInterval = TimeSpan.FromSeconds(1);
     private TimeSpan _nextPulse;
 
     private readonly HashSet<Entity<MindContainerComponent>> _nearby = [];
     private readonly HashSet<EntityUid> _lit = [];
     private readonly HashSet<EntityUid> _wasLit = [];
-    private readonly List<EntityUid> _woundables = [];
 
     public override void Update(float frameTime)
     {
@@ -82,26 +78,9 @@ public sealed partial class FSBeaconOfLightSystem : EntitySystem
             if (!ally.Comp.HasMind || HasComp<WaveSpawnedTagComponent>(ally) || !_mobState.IsAlive(ally))
                 continue;
 
-            StopBleeding(ally);
+            _ailments.StopBleeding(ally, user, FSCureKind.Mass);
             _damageable.HealEvenly(ally.Owner, FixedPoint2.New(-heal));
         }
-    }
-
-    private void StopBleeding(EntityUid ally)
-    {
-        if (TryComp<BloodstreamComponent>(ally, out var blood) && blood.BleedAmount > 0f)
-            _bloodstream.TryModifyBleedAmount((ally, blood), -blood.BleedAmount);
-
-        if (!_organs.TryGetRootOrgan(ally, out var root))
-            return;
-
-        _woundables.Clear();
-        _woundables.Add(root.Owner);
-        foreach (var child in _wounds.GetAllWoundableChildren(root.Owner))
-            _woundables.Add(child.Owner);
-
-        foreach (var woundable in _woundables)
-            _wounds.TryHaltAllBleeding(woundable);
     }
 
     private void SetLight(EntityUid shield, float radius, bool on)
@@ -112,8 +91,8 @@ public sealed partial class FSBeaconOfLightSystem : EntitySystem
             return;
 
         _lights.SetColor(shield, LightColor, light);
-        _lights.SetRadius(shield, radius + 1f, light);
-        _lights.SetEnergy(shield, 1.5f, light);
+        _lights.SetRadius(shield, radius + LightRadiusPadding, light);
+        _lights.SetEnergy(shield, LightEnergy, light);
     }
 
     private int LevelOf(EntityUid user)

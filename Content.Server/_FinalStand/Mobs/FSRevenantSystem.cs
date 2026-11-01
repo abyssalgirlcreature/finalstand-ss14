@@ -2,10 +2,12 @@ using System.Numerics;
 using Content.Server._FinalStand.GameTicking.Rules;
 using Content.Server._FinalStand.Spawners;
 using Content.Server.NPC.HTN;
+using Content.Shared._FinalStand.Ailments;
 using Content.Shared._FinalStand.FriendlyFire;
 using Content.Shared._FinalStand.Mobs;
 using Content.Shared.Damage.Systems;
 using Content.Shared.Examine;
+using Content.Shared.GameTicking;
 using Content.Shared.Ghost;
 using Content.Shared.Ghost.Components;
 using Content.Shared.Mobs;
@@ -24,6 +26,7 @@ namespace Content.Server._FinalStand.Mobs;
 public sealed partial class FSRevenantSystem : EntitySystem
 {
     [Dependency] private DamageableSystem _damageable = default!;
+    [Dependency] private FSAilmentSystem _ailments = default!;
     [Dependency] private ExamineSystemShared _examine = default!;
     [Dependency] private HTNSystem _htn = default!;
     [Dependency] private MobThresholdSystem _thresholds = default!;
@@ -34,7 +37,8 @@ public sealed partial class FSRevenantSystem : EntitySystem
     [Dependency] private FSRevenantEffectSystem _effects = default!;
     [Dependency] private SharedPopupSystem _popup = default!;
     [Dependency] private IRobustRandom _random = default!;
-    [Dependency] private WaveGameRuleSystem _waveRule = default!;
+    [Dependency] private FSDarkWaveSystem _darkWave = default!;
+    [Dependency] private FSRevenantBoundSystem _bound = default!;
 
     private int _combosOpened;
     private int _combosCompleted;
@@ -61,6 +65,14 @@ public sealed partial class FSRevenantSystem : EntitySystem
         SubscribeLocalEvent<FSRevenantComponent, MapInitEvent>(OnMapInit);
         SubscribeLocalEvent<FSRevenantComponent, ComponentShutdown>(OnShutdown);
         SubscribeLocalEvent<FSRevenantComponent, MobStateChangedEvent>(OnMobStateChanged);
+        SubscribeLocalEvent<RoundRestartCleanupEvent>(OnRoundRestart);
+    }
+
+    // The debug lock and telemetry are for one test round, not every round after it.
+    private void OnRoundRestart(RoundRestartCleanupEvent ev)
+    {
+        _debugLock = null;
+        ResetTelemetry();
     }
 
     private void OnMapInit(EntityUid uid, FSRevenantComponent comp, MapInitEvent args)
@@ -169,7 +181,7 @@ public sealed partial class FSRevenantSystem : EntitySystem
                 if (comp.LastLockedOutcome != lockFired)
                 {
                     comp.LastLockedOutcome = lockFired;
-                    Log.Info($"[FSRevenant] {ToPrettyString(uid)} locked to {locked}: " +
+                    Log.Info($"{ToPrettyString(uid)} locked to {locked}: " +
                              $"{(lockFired ? "firing" : $"refused at {dist:F1} tiles")}");
                 }
 
@@ -360,7 +372,7 @@ public sealed partial class FSRevenantSystem : EntitySystem
                 _cccEntity = ccc;
         }
 
-        return _waveRule.IsDarkWaveActive();
+        return _darkWave.IsDarkWaveActive();
     }
 
     private void BeginChannel(EntityUid uid)

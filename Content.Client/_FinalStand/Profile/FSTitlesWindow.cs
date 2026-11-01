@@ -4,6 +4,7 @@ using Content.Client.UserInterface.Controls;
 using Content.Shared._FinalStand.Titles;
 using Robust.Client.ResourceManagement;
 using Robust.Client.UserInterface;
+using Robust.Shared.Prototypes;
 
 namespace Content.Client._FinalStand.Profile;
 
@@ -11,7 +12,7 @@ public sealed class FSTitlesWindow : FancyWindow
 {
     private readonly FSTitlesPanel _panel = new();
 
-    public event Action<string?>? OnEquip;
+    public event Action<ProtoId<FSTitlePrototype>?>? OnEquip;
 
     public FSTitlesWindow()
     {

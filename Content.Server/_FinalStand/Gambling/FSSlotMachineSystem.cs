@@ -63,7 +63,7 @@ public sealed partial class FSSlotMachineSystem : EntitySystem
 
         var won = (int) MathF.Round(stake * payout.Multiplier);
         if (won > 0)
-            _wallet.GiveCredits(mindId, won, earned: false);
+            _wallet.AddCredits(mindId, won);
 
         _popup.PopupEntity(Loc.GetString(payout.Message, ("credits", won)), ent, user, payout.Popup);
 

@@ -20,7 +20,9 @@ public sealed partial class LungSystem : EntitySystem
     public override void Initialize()
     {
         base.Initialize();
-        SubscribeLocalEvent<LungComponent, MapInitEvent>(OnMapInit);
+        // FINALSTAND: lung prototypes already list their gas solution (SolutionLungGas). Unordered, this could run
+        // before the solution manager's own MapInit and make a second "Lung" solution; after it, EnsureSolution finds it.
+        SubscribeLocalEvent<LungComponent, MapInitEvent>(OnMapInit, after: [_solutionContainerSystem.GetType()]);
         SubscribeLocalEvent<BreathToolComponent, GotEquippedEvent>(OnGotEquipped);
         SubscribeLocalEvent<BreathToolComponent, GotUnequippedEvent>(OnGotUnequipped);
     }
