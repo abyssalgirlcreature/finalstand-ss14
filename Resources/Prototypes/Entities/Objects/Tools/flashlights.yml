@@ -9,6 +9,7 @@
     - Flashlight
   - type: HandheldLight
     addPrefix: false
+    wattage: 0
     blinkingBehaviourId: blinking
     radiatingBehaviourId: radiating
   - type: LightBehaviour
@@ -91,7 +92,7 @@
         startingItem: PowerCellMedium
   - type: HandheldLight
     addPrefix: false
-    wattage: 0.5
+    wattage: 0
   - type: ToggleableVisuals
     inhandVisuals:
       left:
