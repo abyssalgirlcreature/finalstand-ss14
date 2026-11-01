@@ -422,7 +422,8 @@ fs-mastery-gold = Gold
 fs-mastery-tier-up = {$perk} mastery reached {$tier}!
 fs-mastery-progress = Mastery: {$tier} · {$kills} / {$next} kills at level 4
 fs-mastery-progress-max = Mastery: {$tier} · {$kills} kills
-fs-mastery-hint = Kills while this perk is slotted at level 4 count toward its mastery.
+fs-mastery-hint = Kills while this perk is slotted at level 4 count toward its mastery. Gold mastery awards a perk point.
+fs-mastery-gold-reward = Gold mastery earned you {$points} perk point!
 
 fs-archetype-tooltip = Slot {$archetype} perks of one category for an archetype bonus, {$keystone} for its keystone.
 fs-archetype-progress = {$category} {$count}/{$needed} for an archetype

@@ -15,6 +15,8 @@ public static class FSPerkMastery
 {
     public static readonly int[] Thresholds = { 500, 2500, 10000 };
 
+    public const int GoldPerkPoints = 1;
+
     public static FSMasteryTier Tier(int kills)
     {
         var tier = FSMasteryTier.None;
