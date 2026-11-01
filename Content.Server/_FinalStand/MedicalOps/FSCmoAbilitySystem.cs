@@ -235,8 +235,7 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
     }
 
     // fs-cmo-dividend-effects quotes both numbers; CmoDividendTextTest keeps them in step.
-    public const int DividendFundCost = 1500;
-    public const int DividendPayout = 1800;
+    public const int DividendPercent = 25;
     private static readonly TimeSpan DividendCooldown = TimeSpan.FromSeconds(300);
 
     private void RunDividend(EntityUid performer)
@@ -254,10 +253,11 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
                 recipients.Add(mindId);
         }
 
-        if (recipients.Count == 0 || !_fund.TryDeductMedicalFunds(DividendFundCost))
+        var payout = _fund.GetBalance() * DividendPercent / 100;
+        if (recipients.Count == 0 || payout <= 0 || !_fund.TryDeductMedicalFunds(payout))
             return;
 
-        var each = DividendPayout / recipients.Count;
+        var each = payout / recipients.Count;
         foreach (var mindId in recipients)
             _wallet.GiveCredits(mindId, each);
 
