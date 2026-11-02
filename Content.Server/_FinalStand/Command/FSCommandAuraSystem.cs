@@ -82,6 +82,19 @@ public sealed partial class FSCommandAuraSystem : EntitySystem
                 RemCompDeferred<FSCommandAuraBuffComponent>(uid);
         }
         _stale.Clear();
+
+        var active = EntityQueryEnumerator<FSCommandAuraBuffComponent>();
+        while (active.MoveNext(out var uid, out var buff))
+        {
+            if (buff.Active.SetEquals(buff.Sources.Keys))
+                continue;
+
+            buff.Active.Clear();
+            foreach (var aura in buff.Sources.Keys)
+                buff.Active.Add(aura);
+
+            Dirty(uid, buff);
+        }
     }
 
     private void Project(EntityUid source, EntityUid sourceMind, FSCommandAura aura, float radius)

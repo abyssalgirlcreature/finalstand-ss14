@@ -1,5 +1,6 @@
 using System.Globalization;
 using Content.Client._FinalStand.Interface;
+using Content.Shared._FinalStand.Command;
 using Content.Shared._FinalStand.Leveling;
 using Content.Shared._FinalStand.MedicalOps;
 using Content.Shared._FinalStand.Perks;
@@ -322,11 +323,23 @@ public sealed partial class WaveHudSystem : EntitySystem
                 [Loc.GetString("fs-buff-source-perk")]));
         }
 
-        if (_player.LocalEntity is not { } player
-            || !TryComp<FSMedicalBonusComponent>(player, out var bonus))
-        {
+        if (_player.LocalEntity is not { } player)
             return;
+
+        if (TryComp<FSCommandAuraBuffComponent>(player, out var auras))
+        {
+            foreach (var aura in auras.Active)
+            {
+                overlay.MedicalBuffs.Add(new WaveHudOverlay.MedicalBuffRow(
+                    Loc.GetString(FSCommandAuraText.NameLocId(aura)),
+                    AuraIcon,
+                    -1,
+                    [Loc.GetString("fs-buff-source-command"), Loc.GetString(FSCommandAuraText.EffectLocId(aura))]));
+            }
         }
+
+        if (!TryComp<FSMedicalBonusComponent>(player, out var bonus))
+            return;
 
         foreach (var (source, buff) in bonus.Active)
         {
@@ -357,6 +370,7 @@ public sealed partial class WaveHudSystem : EntitySystem
         }
     }
 
+    private const string AuraIcon = "buff";
     private const string DirectiveSource = "directive";
     private static readonly string[] CmoSources = [DirectiveSource, "mcp", "mobilisation", "doctrine"];
 
