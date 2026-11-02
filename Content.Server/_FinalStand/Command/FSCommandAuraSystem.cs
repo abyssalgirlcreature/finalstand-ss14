@@ -2,9 +2,9 @@ using System.Collections.Frozen;
 using Content.Shared._FinalStand.Command;
 using Content.Shared._FinalStand.Deployables;
 using Content.Shared.Mind;
+using Content.Shared.Mind.Components;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.Roles.Jobs;
-using Robust.Shared.Player;
 using Robust.Shared.Timing;
 
 namespace Content.Server._FinalStand.Command;
@@ -31,7 +31,7 @@ public sealed partial class FSCommandAuraSystem : EntitySystem
 
     private static readonly TimeSpan SweepInterval = TimeSpan.FromSeconds(0.5);
 
-    private readonly HashSet<Entity<ActorComponent>> _players = [];
+    private readonly HashSet<Entity<MindContainerComponent>> _players = [];
     private readonly HashSet<Entity<FSDeployedByComponent>> _structures = [];
     private readonly List<EntityUid> _stale = [];
 
@@ -64,7 +64,7 @@ public sealed partial class FSCommandAuraSystem : EntitySystem
             _stale.Add(uid);
         }
 
-        var sources = EntityQueryEnumerator<ActorComponent>();
+        var sources = EntityQueryEnumerator<MindContainerComponent>();
         while (sources.MoveNext(out var uid, out _))
         {
             if (!_mobState.IsAlive(uid)
@@ -103,6 +103,9 @@ public sealed partial class FSCommandAuraSystem : EntitySystem
         foreach (var (uid, _) in _players)
         {
             if (uid == source && aura == FSCommandAura.DownWithTheShip)
+                continue;
+
+            if (!_mind.TryGetMind(uid, out _, out _))
                 continue;
 
             EnsureComp<FSCommandAuraBuffComponent>(uid).Sources[aura] = sourceMind;
