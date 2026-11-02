@@ -169,7 +169,8 @@ public sealed partial class FSParticleSystem : EntitySystem
             if (attachment.Owed < 1f)
                 continue;
 
-            var turn = attachment.Emitter.RotateWithEntity ? (float) rotation.Degrees : 0f;
+            // A mob faces along its local south (as the mover and its sprite do), half a turn from local up.
+            var turn = attachment.Emitter.RotateWithEntity ? (float) rotation.Degrees + 180f : 0f;
             while (attachment.Owed >= 1f)
             {
                 attachment.Owed -= 1f;

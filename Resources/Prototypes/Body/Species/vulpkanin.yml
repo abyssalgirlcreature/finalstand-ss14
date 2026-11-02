@@ -179,9 +179,9 @@
     coldDamage:
       types:
         Cold: 0.05 # Per second, scales with temperature & other constants
-    heatDamage:
-      types:
-        Heat: 2.5 # Per second, scales with temperature & other constants
+    # FINALSTAND: no heat damage from body temperature. Burning already hurts through the fire itself; this ignored
+    # armour, kept climbing under sustained fire and went on for minutes after the fire was out.
+    heatDamage: {}
   - type: Wagging
     action: ActionToggleWaggingVulpkanin
   - type: JumpAbility

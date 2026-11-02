@@ -13,20 +13,26 @@ namespace Content.Server._FinalStand.Shop;
 // Bandolier follows whoever last equipped the gun or loaded it, so holstering never changes capacity.
 public sealed partial class FSPlayerUpgradesSystem
 {
+    // A gun's perk and buff modifiers are read off whoever holds it when it refreshes, so drawing it refreshes them:
+    // a gun bought, spawned or holstered away from its owner would otherwise keep the last holder's numbers.
     private void OnGunEquippedHand(EntityUid gun, GunComponent _, GotEquippedHandEvent args)
     {
         ReconcileMagazinePercent(gun, args.User);
+        _gun.RefreshModifiers(gun);
     }
 
-    public void ReconcileHeldMagazines(EntityUid body)
+    public void ReconcileHeldGuns(EntityUid body)
     {
         if (!TryComp<HandsComponent>(body, out var hands))
             return;
 
         foreach (var held in _hands.EnumerateHeld((body, hands)))
         {
-            if (HasComp<GunComponent>(held))
-                ReconcileMagazinePercent(held, body);
+            if (!HasComp<GunComponent>(held))
+                continue;
+
+            ReconcileMagazinePercent(held, body);
+            _gun.RefreshModifiers(held);
         }
     }
 

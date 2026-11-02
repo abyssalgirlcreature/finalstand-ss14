@@ -164,7 +164,7 @@ public sealed partial class FSBreachEvaluator : EntitySystem
             }
             if (!hasTravelDir)
             {
-                var facing = _transform.GetWorldRotation(zombie).ToVec();
+                var facing = _transform.GetWorldRotation(zombie).ToWorldVec();
                 if (facing.LengthSquared() > 0.01f)
                 {
                     travelDir = facing;

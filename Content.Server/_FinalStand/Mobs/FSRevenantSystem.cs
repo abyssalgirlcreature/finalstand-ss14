@@ -15,6 +15,7 @@ using Content.Shared.Mobs.Components;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.Physics;
 using Content.Shared.Popups;
+using Content.Shared.Stunnable;
 using Robust.Shared.Map;
 using Robust.Shared.Physics.Systems;
 using Robust.Shared.Player;
@@ -149,6 +150,15 @@ public sealed partial class FSRevenantSystem : EntitySystem
             comp.BindAccum += frameTime;
             comp.SliceAccum += frameTime;
             comp.BoltAccum += frameTime;
+
+            // A stunned revenant drops a grab or execute in progress and starts nothing new until it recovers.
+            if (HasComp<StunnedComponent>(uid))
+            {
+                if (comp.IsExecuting || comp.IsGrabPaused)
+                    EndChannel(uid, comp);
+                comp.ExecuteTarget = null;
+                continue;
+            }
 
             if (TickChannel(uid, comp, frameTime))
                 continue;

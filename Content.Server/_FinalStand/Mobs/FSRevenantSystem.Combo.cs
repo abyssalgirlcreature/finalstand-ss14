@@ -120,10 +120,15 @@ public sealed partial class FSRevenantSystem
         comp.PhaseAccum = 0f;
     }
 
+    // Breaks off whatever it was doing, a grab or an execute wind-up included, and backs away.
     public void ForceRetreat(EntityUid uid)
     {
-        if (TryComp<FSRevenantComponent>(uid, out var comp))
-            EnterPhase(uid, comp, FSRevenantPhase.Retreat);
+        if (!TryComp<FSRevenantComponent>(uid, out var comp))
+            return;
+
+        EndChannel(uid, comp);
+        comp.ExecuteTarget = null;
+        EnterPhase(uid, comp, FSRevenantPhase.Retreat);
     }
 
     public bool IsDarkWave => _isDarkWave;

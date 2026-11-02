@@ -9,7 +9,7 @@
     sprite: _FinalStand/Effects/Flamethrower/fire.rsi
     state: fire
   rate: 60
-  lifetime: 0.5, 0.6
+  lifetime: 0.6, 0.6
   speed: 9.5, 10.5
   spread: 20
   rotateWithEntity: true
@@ -22,4 +22,4 @@
   endColor: "#ff3c1040"
   tinted: false
   fadeIn: 0.05
-  fadeOut: 0.35
+  fadeOut: 0.2

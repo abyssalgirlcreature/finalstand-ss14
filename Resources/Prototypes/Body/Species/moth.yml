@@ -184,9 +184,9 @@
     coldDamage:
       types:
         Cold: 0.05 # per second, scales with temperature & other constants
-    heatDamage:
-      types:
-        Heat: 3 # per second, scales with temperature & other constants
+    # FINALSTAND: no heat damage from body temperature. Burning already hurts through the fire itself; this ignored
+    # armour, kept climbing under sustained fire and went on for minutes after the fire was out.
+    heatDamage: {}
   - type: TemperatureSpeed
     thresholds:
       289: 0.9

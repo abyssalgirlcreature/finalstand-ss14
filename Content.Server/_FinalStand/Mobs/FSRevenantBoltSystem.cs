@@ -58,11 +58,8 @@ public sealed partial class FSRevenantBoltSystem : EntitySystem
                 if (!TryComp<MobStateComponent>(targetUid, out var ms) || ms.CurrentState != MobState.Alive)
                     continue;
 
-                if (bolt.LastHitTimes.TryGetValue(targetUid, out var lastHit)
-                    && (now - lastHit).TotalSeconds < bolt.HitCooldown)
+                if (!bolt.Hit.Add(targetUid))
                     continue;
-
-                bolt.LastHitTimes[targetUid] = now;
 
                 var dealt = _revenant.DealSlash(targetUid, bolt.Damage, bolt.ResistanceBypass, bolt.Shooter);
                 _ailments.InflictHit(targetUid, bolt.Injury, dealt, bolt.Shooter);

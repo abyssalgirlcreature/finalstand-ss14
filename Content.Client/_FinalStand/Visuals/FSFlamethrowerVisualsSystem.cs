@@ -73,8 +73,8 @@ public sealed partial class FSFlamethrowerVisualsSystem : EntitySystem
         if (_prototypes.TryIndex(FlameEmitter, out var proto) && proto.Speed.X + proto.Speed.Y > 0f)
             _particles.SetSpeedScale(emitter, ent.Comp.FireProjectileSpeed * 2f / (proto.Speed.X + proto.Speed.Y));
 
-        // A child of the zombie half way along the flames; its local up is the way it aims, so the light swings with it.
-        var glow = Spawn(GlowProto, new EntityCoordinates(ent, new Vector2(0f, ent.Comp.FlameRange * 0.5f)));
+        // A child of the zombie half way along the flames, on its facing side (local south), so the light swings with it.
+        var glow = Spawn(GlowProto, new EntityCoordinates(ent, new Vector2(0f, -ent.Comp.FlameRange * 0.5f)));
         _flames[ent] = (emitter, glow);
     }
 
