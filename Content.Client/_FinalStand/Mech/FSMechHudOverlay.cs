@@ -179,7 +179,6 @@ public sealed partial class FSMechHudOverlay : Overlay
 
         var cardsAt = new Vector2(c.X + radius + 40f * s, c.Y - radius * 0.92f);
         Cards(handle, mech.Owner, comp, cardsAt, now, motion, s);
-        MeleeCard(handle, comp, cardsAt, now, motion, s);
         CombatBox = UIBox2.FromDimensions(cardsAt - new Vector2(0f, 28f * s), new Vector2(CardWidth * s, 22f * s));
         Callouts(handle, mech, new Vector2(c.X, c.Y + radius + 16f * s), power, now, motion, s);
     }
@@ -313,38 +312,6 @@ public sealed partial class FSMechHudOverlay : Overlay
             handle.DrawString(_ammo!, at + new Vector2(width - slant - 8f * s - textSize.X, (height - textSize.Y) / 2f), text,
                 empty ? FSPalette.Danger : selected ? FSPalette.TextBright : FSPalette.TextMuted);
         }
-    }
-
-    private void MeleeCard(DrawingHandleScreen handle, MechComponent mech, Vector2 origin, double real, bool motion, float s)
-    {
-        var enter = motion
-            ? EaseOut((float) Math.Clamp((real - _bootAt - 0.15 - FSMechHudSystem.MeleeIndex * 0.08) / 0.25, 0d, 1d))
-            : 1f;
-        if (enter <= 0f)
-            return;
-
-        var width = CardWidth * s;
-        var height = CardHeight * s;
-        var slant = CardSlant * s;
-        var selected = mech.CurrentSelectedEquipment == null;
-        var at = origin + new Vector2((selected ? -10f * s : 0f) + (1f - enter) * 48f * s,
-            FSMechHudSystem.MeleeIndex * CardStep * s);
-        var accent = selected ? Power : Color.White.WithAlpha(0.18f);
-
-        FSShapes.Slanted(handle, at + new Vector2(2f, 3f) * s, width, height, slant, Shadow);
-        FSShapes.Slanted(handle, at, width, height, slant, CardBack.WithAlpha(selected ? 0.66f : 0.48f));
-        FSShapes.Slanted(handle, at, width, height, slant, accent, border: 1.5f * s);
-        if (selected)
-            FSShapes.Slanted(handle, at, slant + 4f * s, height, slant, Power);
-
-        var keyCenter = at + new Vector2(24f * s, height / 2f);
-        FSShapes.Diamond(handle, keyCenter, 16f * s, selected ? Power : Color.White.WithAlpha(0.45f), border: 1.5f * s);
-        CenterDigit(handle, (FSMechHudSystem.MeleeIndex + 1).ToString(), keyCenter, selected ? Power : FSPalette.TextBright);
-
-        var label = Loc.GetString("fs-mech-hud-melee");
-        var size = handle.GetDimensions(_ammo!, label, 1f);
-        handle.DrawString(_ammo!, at + new Vector2(width - slant - 8f * s - size.X, (height - size.Y) / 2f), label,
-            selected ? FSPalette.TextBright : FSPalette.TextMuted);
     }
 
     private float? Cooldown(EntityUid gun, TimeSpan now)
