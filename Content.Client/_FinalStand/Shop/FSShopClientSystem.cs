@@ -1,4 +1,5 @@
-﻿using Content.Client._FinalStand.Visuals;
+﻿using System.Linq;
+using Content.Client._FinalStand.Visuals;
 using Content.Shared._FinalStand.Economy;
 using Content.Shared._FinalStand.Grenades;
 using Content.Shared._FinalStand.Research;
@@ -350,7 +351,19 @@ public sealed partial class FSShopClientSystem : EntitySystem
 
     public bool PlayerHasWeaponInInventory(EntityUid? player, EntProtoId? protoId, List<EntProtoId>? aliases = null)
     {
-        if (player == null || protoId == null) return false;
+        return CarriedCopies(player, protoId, aliases).Any();
+    }
+
+    // A copy from a shop, not job gear, so selling it pays for the weapon too.
+    public bool CarriesBoughtCopy(EntityUid? player, EntProtoId? protoId, List<EntProtoId>? aliases = null)
+    {
+        return CarriedCopies(player, protoId, aliases).Any(copy => !HasComp<FSIssuedWeaponComponent>(copy));
+    }
+
+    private IEnumerable<EntityUid> CarriedCopies(EntityUid? player, EntProtoId? protoId, List<EntProtoId>? aliases)
+    {
+        if (player == null || protoId == null)
+            yield break;
         var targetId = protoId.Value.Id;
 
         bool Matches(EntityUid ent)
@@ -373,14 +386,14 @@ public sealed partial class FSShopClientSystem : EntitySystem
         foreach (var held in _hands.EnumerateHeld(player.Value))
         {
             if (Matches(held))
-                return true;
+                yield return held;
         }
 
         foreach (var slot in InventorySlots)
         {
             if (_inventory.TryGetSlotEntity(player.Value, slot, out var item) && item != null
                 && Matches(item.Value))
-                return true;
+                yield return item.Value;
         }
 
         if (_inventory.TryGetSlotEntity(player.Value, "back", out var back) && back != null
@@ -391,12 +404,10 @@ public sealed partial class FSShopClientSystem : EntitySystem
                 foreach (var entity in container.ContainedEntities)
                 {
                     if (Matches(entity))
-                        return true;
+                        yield return entity;
                 }
             }
         }
-
-        return false;
     }
 
     private bool OwnsShopWeapon(FSShopWeaponComponent shop)

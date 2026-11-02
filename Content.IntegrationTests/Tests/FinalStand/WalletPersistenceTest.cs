@@ -37,7 +37,7 @@ public sealed class WalletPersistenceTest : GameTest
             minds.SetUserId(mind, session.UserId);
             Assert.That(entMan.HasComponent<FSPlayerWalletComponent>(mind), Is.False);
 
-            wallets.DistributeCredits(100);
+            wallets.DistributeCredits(100, FSCreditSource.WaveClear);
             wallets.SaveAll();
 
             Assert.Multiple(() =>

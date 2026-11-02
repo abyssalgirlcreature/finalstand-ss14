@@ -154,7 +154,7 @@ public sealed partial class FSEngineerStatsSystem : EntitySystem
         var whole = (int) owed;
         _unpaid[mindId] = owed - whole;
         if (whole > 0)
-            _wallet.GiveCredits(mindId, whole);
+            _wallet.GiveCredits(mindId, whole, FSCreditSource.Engineering);
     }
 
     private void OnRoundEnd(RoundEndTextAppendEvent args)

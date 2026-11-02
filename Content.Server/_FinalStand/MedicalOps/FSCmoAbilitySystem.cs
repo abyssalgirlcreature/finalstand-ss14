@@ -259,7 +259,7 @@ public sealed partial class FSCmoAbilitySystem : EntitySystem
 
         var each = DividendPayout / recipients.Count;
         foreach (var mindId in recipients)
-            _wallet.GiveCredits(mindId, each);
+            _wallet.GiveCredits(mindId, each, FSCreditSource.Medical);
 
         panel.DividendReadyAt = _timing.CurTime + DividendCooldown;
         Dirty(performer, panel);

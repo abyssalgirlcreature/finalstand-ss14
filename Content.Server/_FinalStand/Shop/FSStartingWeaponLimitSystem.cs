@@ -6,7 +6,8 @@ using Robust.Shared.Prototypes;
 
 namespace Content.Server._FinalStand.Shop;
 
-// Job weapons the shop buys back are issued once per player per round, so rejoining can't farm them.
+// Job weapons the shop buys back are issued once per player per round, so rejoining can't farm them, and they sell for
+// nothing (FSIssuedWeaponComponent).
 public sealed partial class FSStartingWeaponLimitSystem : EntitySystem
 {
     [Dependency] private IPrototypeManager _proto = default!;
@@ -28,11 +29,15 @@ public sealed partial class FSStartingWeaponLimitSystem : EntitySystem
 
     private void OnSpawnComplete(PlayerSpawnCompleteEvent ev)
     {
-        if (_issued.Add(ev.Player.UserId))
-            return;
-
         _found.Clear();
         _search.Collect(ev.Mob, GetSellable(), _found);
+        if (_issued.Add(ev.Player.UserId))
+        {
+            foreach (var item in _found)
+                EnsureComp<FSIssuedWeaponComponent>(item.Uid);
+            return;
+        }
+
         if (_found.Count == 0)
             return;
 

@@ -86,7 +86,7 @@ public sealed partial class FSMysteryBoxSystem : EntitySystem
             return false;
         }
 
-        if (!_mind.TryGetMind(user, out var mindId, out _) || !_wallet.TryDeductCredits(mindId, ent.Comp.Price))
+        if (!_mind.TryGetMind(user, out var mindId, out _) || !_wallet.TryDeductCredits(mindId, ent.Comp.Price, new FSPurchase(FSPurchaseKind.MysteryBox, MetaData(ent).EntityPrototype?.ID ?? "mystery-box")))
         {
             _popup.PopupEntity(Loc.GetString("fs-mystery-box-no-funds", ("price", ent.Comp.Price)), ent, user);
             return false;

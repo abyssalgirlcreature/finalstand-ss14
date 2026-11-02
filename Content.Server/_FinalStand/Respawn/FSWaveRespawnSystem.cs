@@ -167,7 +167,7 @@ public sealed partial class FSWaveRespawnSystem : EntitySystem
         }
 
         var cost = GetCost(mindId);
-        var charged = _wallet.DeductUpTo(mindId, cost);
+        var charged = _wallet.DeductUpTo(mindId, cost, new FSPurchase(FSPurchaseKind.Respawn, "respawn"));
 
         if (TryComp<PullableComponent>(body, out var pullable))
             _pulling.TryStopPull(body, pullable);

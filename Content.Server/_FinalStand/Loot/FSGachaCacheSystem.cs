@@ -57,7 +57,7 @@ public sealed partial class FSGachaCacheSystem : EntitySystem
             return false;
         }
 
-        if (!_mind.TryGetMind(user, out var mindId, out _) || !_wallet.TryDeductCredits(mindId, ent.Comp.Price))
+        if (!_mind.TryGetMind(user, out var mindId, out _) || !_wallet.TryDeductCredits(mindId, ent.Comp.Price, new FSPurchase(FSPurchaseKind.Gacha, MetaData(ent).EntityPrototype?.ID ?? "gacha")))
         {
             _popup.PopupEntity(Loc.GetString("fs-gacha-no-funds"), ent, user);
             return false;

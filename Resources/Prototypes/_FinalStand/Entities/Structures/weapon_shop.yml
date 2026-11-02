@@ -183,20 +183,6 @@
       baseCost: 100
       type: Accuracy
       valuePerLevel: 0.3
-    - id: mk58-cash-flow
-      name: fs-upgrade-mk58-cash-flow
-      description: fs-upgrade-mk58-cash-flow-desc
-      maxLevel: 2
-      baseCost: 150
-      type: MoneyPerHit
-      valuePerLevel: 2
-    - id: mk58-payday
-      name: fs-upgrade-mk58-payday
-      description: fs-upgrade-mk58-payday-desc
-      maxLevel: 4
-      baseCost: 100
-      type: MoneyGainBonus
-      valuePerLevel: 35
   - type: Sprite
     sprite: Objects/Weapons/Guns/Pistols/mk58.rsi
     state: base

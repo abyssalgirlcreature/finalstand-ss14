@@ -81,7 +81,7 @@ public sealed partial class FSWiseguySystem : EntitySystem
 
         // Not an earning, so it doesn't raise FSCreditsGivenEvent and compound itself.
         ent.Comp.Remainder -= paid;
-        _wallet.AddCredits(ent, paid);
+        _wallet.AddCredits(ent, paid, FSCreditSource.Perk);
         _earnings.RecordCredits(ent, "Wiseguy", paid);
     }
 }
