@@ -1,16 +1,22 @@
+using Content.Shared.Actions;
+using Content.Shared.Actions.Components;
 using Content.Shared.Mech.Components;
+using Content.Shared.Mech.EntitySystems;
 using Content.Shared.Vehicle.Components;
 using Content.Shared.Weapons.Ranged.Components;
 using Robust.Shared.Audio;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Containers;
+using Robust.Shared.Network;
 using Robust.Shared.Timing;
 
 namespace Content.Shared._FinalStand.Mech;
 
 public sealed partial class FSMechWeaponSelectSystem : EntitySystem
 {
+    [Dependency] private SharedActionsSystem _actions = default!;
     [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private INetManager _net = default!;
     [Dependency] private IGameTiming _timing = default!;
 
     private static readonly SoundSpecifier SelectSound = new SoundPathSpecifier("/Audio/Machines/button.ogg");
@@ -20,6 +26,69 @@ public sealed partial class FSMechWeaponSelectSystem : EntitySystem
         base.Initialize();
         SubscribeAllEvent<FSMechSelectWeaponEvent>(OnSelect);
         SubscribeLocalEvent<FSMechWeaponTogglesComponent, EntRemovedFromContainerMessage>(OnRemoved);
+        SubscribeLocalEvent<FSMechFistsComponent, VehicleOperatorSetEvent>(OnOperatorSet,
+            after: [typeof(SharedMechSystem)]);
+        SubscribeLocalEvent<FSMechFistsActionEvent>(OnFistsAction);
+    }
+
+    private void OnOperatorSet(Entity<FSMechFistsComponent> ent, ref VehicleOperatorSetEvent args)
+    {
+        if (_net.IsClient)
+            return;
+
+        if (args.OldOperator is { } old)
+            _actions.RemoveProvidedActions(old, ent);
+
+        ent.Comp.Action = null;
+
+        if (args.NewOperator is { } pilot)
+            _actions.AddAction(pilot, ref ent.Comp.Action, ent.Comp.ActionProto, ent);
+    }
+
+    private void OnFistsAction(FSMechFistsActionEvent args)
+    {
+        if (args.Handled || !TryGetPilotMech(args.Performer, out var vehicle, out var mech))
+            return;
+
+        args.Handled = true;
+        ToggleFists(vehicle, mech, args.Performer);
+    }
+
+    private void ToggleFists(EntityUid vehicle, MechComponent mech, EntityUid pilot)
+    {
+        var toggles = EnsureComp<FSMechWeaponTogglesComponent>(vehicle);
+        var fists = mech.CurrentSelectedEquipment == null && toggles.Stowed.Count > 0;
+
+        if (fists)
+        {
+            foreach (var weapon in toggles.Stowed)
+                toggles.Disabled.Remove(weapon);
+
+            toggles.Stowed.Clear();
+            mech.CurrentSelectedEquipment = FirstArmed(mech, toggles);
+        }
+        else
+        {
+            toggles.Stowed.Clear();
+            foreach (var weapon in mech.EquipmentContainer.ContainedEntities)
+            {
+                if (toggles.Disabled.Add(weapon))
+                    toggles.Stowed.Add(weapon);
+            }
+
+            mech.CurrentSelectedEquipment = null;
+        }
+
+        if (TryComp<FSMechFistsComponent>(vehicle, out var comp)
+            && comp.Action is { } action
+            && TryComp<ActionComponent>(action, out var actionComp))
+        {
+            _actions.SetToggled((action, actionComp), !fists);
+        }
+
+        Dirty(vehicle, toggles);
+        Dirty(vehicle, mech);
+        _audio.PlayPredicted(SelectSound, vehicle, pilot);
     }
 
     private void OnSelect(FSMechSelectWeaponEvent ev, EntitySessionEventArgs args)
@@ -29,21 +98,11 @@ public sealed partial class FSMechWeaponSelectSystem : EntitySystem
             return;
 
         var toggles = EnsureComp<FSMechWeaponTogglesComponent>(vehicle);
-        if (ev.Weapon == NetEntity.Invalid)
-        {
-            foreach (var equipment in mech.EquipmentContainer.ContainedEntities)
-                toggles.Disabled.Add(equipment);
-
-            mech.CurrentSelectedEquipment = null;
-            Dirty(vehicle, toggles);
-            Dirty(vehicle, mech);
-            _audio.PlayPredicted(SelectSound, vehicle, pilot);
-            return;
-        }
-
         var weapon = GetEntity(ev.Weapon);
         if (!mech.EquipmentContainer.Contains(weapon))
             return;
+
+        toggles.Stowed.Remove(weapon);
 
         if (toggles.Disabled.Remove(weapon))
         {
@@ -68,7 +127,8 @@ public sealed partial class FSMechWeaponSelectSystem : EntitySystem
         if (_timing.ApplyingState)
             return;
 
-        if (ent.Comp.Disabled.Remove(args.Entity))
+        var stowed = ent.Comp.Stowed.Remove(args.Entity);
+        if (ent.Comp.Disabled.Remove(args.Entity) || stowed)
             Dirty(ent);
     }
 

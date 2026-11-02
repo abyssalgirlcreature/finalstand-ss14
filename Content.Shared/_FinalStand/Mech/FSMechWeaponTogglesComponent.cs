@@ -9,4 +9,7 @@ public sealed partial class FSMechWeaponTogglesComponent : Component
 {
     [DataField, AutoNetworkedField]
     public HashSet<EntityUid> Disabled = new();
+
+    [DataField, AutoNetworkedField]
+    public HashSet<EntityUid> Stowed = new();
 }
