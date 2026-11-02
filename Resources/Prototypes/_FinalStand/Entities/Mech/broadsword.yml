@@ -74,6 +74,9 @@
   - type: MeleeWeapon
     hidden: true
     attackRate: 1
+    animation: FSWeaponArcMechFist
+    wideAnimation: FSWeaponArcMechFist
+    animationOffset: 1.4
     damage:
       types:
         Blunt: 90
@@ -136,16 +139,18 @@
     startingCharge: 4320
 
 - type: entity
-  id: FSEffectMechFist
+  parent: WeaponArcStatic
+  id: FSWeaponArcMechFist
   name: driven fist
   categories: [ HideSpawnMenu ]
   components:
-  - type: Transform
-    anchored: true
   - type: Sprite
     drawdepth: Mobs
-    scale: 2.0,2.0
+    scale: 2.5,2.5
     sprite: _FinalStand/Effects/BroadswordFist.rsi
     state: fist
+  - type: WeaponArcVisuals
+    animation: Thrust
+    ownSprite: true
   - type: TimedDespawn
-    lifetime: 0.3
+    lifetime: 1.0
