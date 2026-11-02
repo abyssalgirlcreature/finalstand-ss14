@@ -98,6 +98,9 @@ public sealed partial class FSMeleeJuiceSystem : SharedFSMeleeJuiceSystem
     private const float WildfireRadius = 2f;
     private const float AftershockReach = 1.5f;
     private const float AftershockDamage = 0.5f;
+    // Each zombie the aftershock reaches, nearest first, takes this much of what the one before it took, down to the floor.
+    private const float AftershockFalloff = 0.75f;
+    private const float AftershockFalloffFloor = 0.25f;
     private static readonly TimeSpan AftershockDelay = TimeSpan.FromSeconds(0.4);
     private static readonly TimeSpan ShotRefresh = TimeSpan.FromSeconds(1);
     private const string WildfireBurst = "FSMeleeWildfireBurst";
@@ -378,7 +381,7 @@ public sealed partial class FSMeleeJuiceSystem : SharedFSMeleeJuiceSystem
         if (TerminatingOrDeleted(shock.User) || !TryComp<FSMeleeJuiceComponent>(shock.Weapon, out var juice))
             return;
 
-        Stagger(shock.User, (shock.Weapon, juice), new List<EntityUid>(), shock.Profile, shock.Center, shock.Damage, true, false);
+        Stagger(shock.User, (shock.Weapon, juice), new List<EntityUid>(), shock.Profile, shock.Center, shock.Damage, true, false, AftershockFalloff);
         Burst(shock.Center, AftershockBurst);
     }
 
@@ -728,7 +731,7 @@ public sealed partial class FSMeleeJuiceSystem : SharedFSMeleeJuiceSystem
         return Xform.GetMapCoordinates(user).Offset(dir * Math.Max(0f, ClearDistance(user, dir, melee.Range * SlamReach)));
     }
 
-    private void Stagger(EntityUid user, Entity<FSMeleeJuiceComponent> weapon, List<EntityUid> targets, FSMeleeJuiceProfile profile, MapCoordinates center, DamageSpecifier damage, bool heavy, bool finisher)
+    private void Stagger(EntityUid user, Entity<FSMeleeJuiceComponent> weapon, List<EntityUid> targets, FSMeleeJuiceProfile profile, MapCoordinates center, DamageSpecifier damage, bool heavy, bool finisher, float falloff = 1f)
     {
         DamageSpecifier? shockwave = profile.StaggerDamage > 0f ? damage * profile.StaggerDamage : null;
         _nearby.Clear();
@@ -742,7 +745,11 @@ public sealed partial class FSMeleeJuiceSystem : SharedFSMeleeJuiceSystem
                 struck.Add(mob);
         }
 
+        if (falloff < 1f)
+            struck.Sort((a, b) => (Xform.GetWorldPosition(a) - center.Position).LengthSquared().CompareTo((Xform.GetWorldPosition(b) - center.Position).LengthSquared()));
+
         var staggered = 0;
+        var scale = 1f;
         foreach (var mob in struck)
         {
             if (TerminatingOrDeleted(mob))
@@ -760,7 +767,8 @@ public sealed partial class FSMeleeJuiceSystem : SharedFSMeleeJuiceSystem
 
             _hitsThisTick[(user, mob)] = (weapon, heavy, finisher);
             _killPipeline.MarkMeleeHit(user, mob);
-            _damageable.ChangeDamage(mob.Owner, shockwave, origin: user);
+            _damageable.ChangeDamage(mob.Owner, scale < 1f ? shockwave * scale : shockwave, origin: user);
+            scale = MathF.Max(AftershockFalloffFloor, scale * falloff);
         }
 
         _style.Bonus(user, FSStyleSystem.StaggerPoints * Math.Min(staggered, 6));

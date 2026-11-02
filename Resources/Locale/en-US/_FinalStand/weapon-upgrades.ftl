@@ -498,7 +498,7 @@ fs-upgrade-fireaxe-axtinguish = Axtinguish
 fs-upgrade-fireaxe-axtinguish-desc = Critical hits against enemies on fire.
 
 fs-upgrade-fireaxe-fireman = Fireman
-fs-upgrade-fireaxe-fireman-desc = Total immunity to fire damage. Flames pass right through you.
+fs-upgrade-fireaxe-fireman-desc = Fire damage reduced by 80%.
 
 fs-upgrade-fireaxe-fire-man = Fire Man
 fs-upgrade-fireaxe-fire-man-desc = While on fire, deal increased damage and heal.
@@ -510,7 +510,7 @@ fs-upgrade-fireaxe-wildfire = Wildfire
 fs-upgrade-fireaxe-wildfire-desc = Burning zombies the axe kills burst into flame, setting zombies within 2 tiles alight.
 
 fs-upgrade-fireaxe-aftershock = Aftershock
-fs-upgrade-fireaxe-aftershock-desc = A fully charged slam strikes again a moment later, half as hard and half again as wide.
+fs-upgrade-fireaxe-aftershock-desc = A fully charged slam strikes again a moment later, half as hard and half again as wide. Each zombie it reaches past the nearest takes 25% less than the one before, down to a quarter.
 
 fs-upgrade-halberd-honed = Honed Edge
 fs-upgrade-halberd-honed-desc = +90% damage per level.
