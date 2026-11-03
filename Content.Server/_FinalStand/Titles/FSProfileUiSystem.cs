@@ -18,25 +18,25 @@ public sealed partial class FSProfileUiSystem : EntitySystem
 
     private static readonly TimeSpan RequestInterval = TimeSpan.FromSeconds(0.25);
 
-    private readonly Dictionary<NetUserId, TimeSpan> _lastRequest = new();
+    private readonly Dictionary<(NetUserId User, string Kind), TimeSpan> _lastRequest = new();
 
     public override void Initialize()
     {
         base.Initialize();
-        SubscribeNetworkEvent<FSTitlesRequestEvent>((_, args) => Throttled(args, SendTitles));
+        SubscribeNetworkEvent<FSTitlesRequestEvent>((_, args) => Throttled(args, "titles", SendTitles));
         SubscribeNetworkEvent<FSTitleEquipEvent>(OnEquip);
-        SubscribeNetworkEvent<FSMentorRequestEvent>((_, args) => Throttled(args, s => SendMentor(s, null)));
+        SubscribeNetworkEvent<FSMentorRequestEvent>((_, args) => Throttled(args, "mentor", s => SendMentor(s, null)));
         SubscribeNetworkEvent<FSMentorBuyEvent>(OnBuy);
     }
 
-    private void Throttled(EntitySessionEventArgs args, Action<ICommonSession> action)
+    private void Throttled(EntitySessionEventArgs args, string kind, Action<ICommonSession> action)
     {
-        var user = args.SenderSession.UserId;
+        var key = (args.SenderSession.UserId, kind);
         var now = _timing.RealTime;
-        if (_lastRequest.TryGetValue(user, out var last) && now - last < RequestInterval)
+        if (_lastRequest.TryGetValue(key, out var last) && now - last < RequestInterval)
             return;
 
-        _lastRequest[user] = now;
+        _lastRequest[key] = now;
         action(args.SenderSession);
     }
 
@@ -73,7 +73,7 @@ public sealed partial class FSProfileUiSystem : EntitySystem
 
     private void OnEquip(FSTitleEquipEvent msg, EntitySessionEventArgs args)
     {
-        Throttled(args, session =>
+        Throttled(args, "equip", session =>
         {
             if (msg.Title is not { } title)
                 _titles.Equip(session.UserId, null);
@@ -86,7 +86,7 @@ public sealed partial class FSProfileUiSystem : EntitySystem
 
     private void OnBuy(FSMentorBuyEvent msg, EntitySessionEventArgs args)
     {
-        Throttled(args, session =>
+        Throttled(args, "buy", session =>
         {
             _mentor.TryBuy(session.UserId, msg.Item, out var message);
             SendMentor(session, message);

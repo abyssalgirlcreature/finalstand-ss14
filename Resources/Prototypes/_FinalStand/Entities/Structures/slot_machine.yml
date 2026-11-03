@@ -1,0 +1,64 @@
+- type: entity
+  id: FSSlotMachine
+  name: Credit Slots
+  description: Feed it credits, pull the lever, make it big or go broke. The house always wins, eventually.
+  placement:
+    mode: SnapgridCenter
+  components:
+  - type: Transform
+    anchored: true
+  - type: Clickable
+  - type: InteractionOutline
+  - type: Physics
+    bodyType: Static
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeAabb
+          bounds: "-0.25,-0.25,0.25,0.25"
+        density: 100
+        mask:
+        - ItemMask
+        layer:
+        - WallLayer
+  - type: Sprite
+    drawdepth: SmallObjects
+    sprite: Structures/Machines/arcade.rsi
+    layers:
+    - state: arcade
+    - state: screen_spacevillain
+  - type: FSSlotMachine
+    pullSound:
+      path: /Audio/_FinalStand/Machines/SlotMachine/pull.ogg
+    payouts:
+    - weight: 3
+      multiplier: 25
+      message: fs-slots-jackpot
+      popup: LargeCaution
+      sound:
+        path: /Audio/_FinalStand/Machines/SlotMachine/jackpot.ogg
+    - weight: 12
+      multiplier: 8
+      message: fs-slots-big
+      popup: Medium
+      sound:
+        path: /Audio/Machines/chime.ogg
+    - weight: 100
+      multiplier: 3
+      message: fs-slots-win
+      popup: Small
+      sound:
+        path: /Audio/Machines/ding.ogg
+    - weight: 250
+      multiplier: 1.5
+      message: fs-slots-small
+      popup: Small
+      sound:
+        path: /Audio/Machines/twobeep.ogg
+    - weight: 635
+      multiplier: 0
+      message: fs-slots-loss
+      popup: SmallCaution
+      sound:
+        path: /Audio/Machines/buzz-sigh.ogg

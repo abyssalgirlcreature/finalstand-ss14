@@ -7,5 +7,5 @@ public sealed partial class FSRevenantMarkedComponent : Component
 {
     [DataField, AutoNetworkedField, AutoPausedField] public TimeSpan ExpiresAt;
 
-    [DataField, AutoNetworkedField] public EntityUid? MarkedByRevenant;
+    [DataField] public EntityUid? MarkedByRevenant;
 }

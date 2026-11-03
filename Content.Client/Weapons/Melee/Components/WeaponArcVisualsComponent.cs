@@ -13,6 +13,9 @@ public sealed partial class WeaponArcVisualsComponent : Component
 
     [ViewVariables(VVAccess.ReadWrite), DataField("fadeOut")]
     public bool Fadeout = true;
+
+    [DataField]
+    public bool OwnSprite;
 }
 
 public enum WeaponArcAnimation : byte

@@ -539,6 +539,9 @@ fs-upgrade-knife-hemorrhage-desc = Bleeding zombies can be executed without bein
 fs-upgrade-knife-opportunist = Opportunist
 fs-upgrade-knife-opportunist-desc = +50% damage to zombies attacking someone else.
 
+fs-upgrade-knife-inconspicuous = Inconspicuous
+fs-upgrade-knife-inconspicuous-desc = Knife work is quiet: 40% of your hits draw no aggro, leaving the horde on your teammates.
+
 fs-upgrade-akms-damage = Heavier Load
 fs-upgrade-akms-damage-desc = Higher-grain ammunition increases damage dealt by 15% per level.
 

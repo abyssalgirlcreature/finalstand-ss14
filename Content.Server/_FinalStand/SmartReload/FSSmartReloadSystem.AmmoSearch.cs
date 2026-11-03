@@ -31,7 +31,7 @@ public sealed partial class FSSmartReloadSystem : EntitySystem
         return true;
     }
 
-    private EntityUid? FindBestMagazine(EntityUid user, EntityUid gun, EntityUid? justEjected = null)
+    public EntityUid? FindBestMagazine(EntityUid user, EntityUid gun, EntityUid? justEjected = null)
     {
         if (!FSItemSlots.TryGetSlot(EntityManager, _slots, gun, SharedGunSystem.MagazineSlot, out var magSlot))
             return null;

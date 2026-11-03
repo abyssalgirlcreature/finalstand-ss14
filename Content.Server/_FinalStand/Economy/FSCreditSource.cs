@@ -17,6 +17,7 @@ public enum FSCreditSource : byte
     Mentor,
     Perk,
     KillBonus,
+    Gambling,
 
     // Credits that aren't earnings (AddCredits).
     Sale,
@@ -35,6 +36,7 @@ public enum FSPurchaseKind : byte
     Gacha,
     Respawn,
     Transfer,
+    Gambling,
 }
 
 // What a charge paid for. Id is the shop, upgrade, tier or item prototype it was bought from.

@@ -61,6 +61,8 @@ fs-perk-shop-category-economy = ECONOMY
 fs-perk-shop-category-hybrid = HYBRID
 fs-perk-shop-tab-perks = Perks
 fs-perk-shop-tab-prestige = Prestige
+fs-perk-shop-tab-titles = Titles
+fs-perk-shop-tab-mentor = Mentor
 fs-perk-shop-invested = { $amount } PP invested
 fs-perk-shop-loadout-load = LOAD
 fs-perk-shop-loadout-load-tooltip = Swap to this build ({ $perks } perks). Your current build is refunded first.
@@ -420,7 +422,8 @@ fs-mastery-gold = Gold
 fs-mastery-tier-up = {$perk} mastery reached {$tier}!
 fs-mastery-progress = Mastery: {$tier} · {$kills} / {$next} kills at level 4
 fs-mastery-progress-max = Mastery: {$tier} · {$kills} kills
-fs-mastery-hint = Kills while this perk is slotted at level 4 count toward its mastery.
+fs-mastery-hint = Kills while this perk is slotted at level 4 count toward its mastery. Gold mastery awards a perk point.
+fs-mastery-gold-reward = Gold mastery earned you {$points} perk point!
 
 fs-archetype-tooltip = Slot {$archetype} perks of one category for an archetype bonus, {$keystone} for its keystone.
 fs-archetype-progress = {$category} {$count}/{$needed} for an archetype
@@ -436,6 +439,8 @@ fs-archetype-tycoon = Tycoon
 fs-archetype-tycoon-effect = +{ $credits }% kill credits
 fs-archetype-specialist = Specialist
 fs-archetype-specialist-effect = +{ $damage }% damage and credits, +{ $speed }% speed, { $resist }% less damage taken
+fs-archetype-prism = Prism
+fs-archetype-prism-effect = +{ $damage }% damage, +{ $credits }% credits, +{ $speed }% speed, { $resist }% less damage taken
 
 fs-medievalist-no-guns = Your oath forbids firearms.
 fs-perk-locked = That perk is locked in until the round ends.

@@ -11,7 +11,7 @@ namespace Content.Shared._FinalStand.Loot;
 public sealed partial class FSMysteryBoxComponent : Component
 {
     [DataField, AutoNetworkedField]
-    public int Price = 75000;
+    public int Price = 40000;
 
     [DataField(required: true)]
     public List<FSMysteryBoxTier> Tiers = [];

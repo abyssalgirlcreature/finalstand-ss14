@@ -36,7 +36,7 @@ fs-tech-engineering-arc-welding = Arc Welding
 fs-tech-engineering-arc-welding-bonus = Welding plates in is 30% faster. A weld never takes under a second.
 
 fs-tech-engineering-salvage-plating = Salvage Plating
-fs-tech-engineering-salvage-plating-bonus = Deconstructing refunds 75% instead of 50%.
+fs-tech-engineering-salvage-plating-bonus = Deconstructing refunds full materials even from a wrecked structure.
 
 fs-tech-engineering-razor-coil = Razor Coil
 fs-tech-engineering-razor-coil-bonus = Barbed wire cuts twice as deep and makes zombies bleed.

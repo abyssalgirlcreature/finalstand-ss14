@@ -1010,7 +1010,7 @@
     proto: FSXrayLaser
     fireCost: 100
   - type: BatterySelfRecharger
-    autoRechargeRate: 30
+    autoRechargeRate: 96
     autoRechargePauseTime: 2
   - type: Crit
     baseCritChance: 0.05

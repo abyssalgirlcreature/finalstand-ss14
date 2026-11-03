@@ -22,13 +22,13 @@ public sealed partial class PerkShopWindow
             return;
         }
 
-        var name = Loc.GetString(FSArchetypeRules.NameLocId(archetype.Category));
-        var effect = Loc.GetString(FSArchetypeRules.EffectLocId(archetype.Category),
+        var name = Loc.GetString(FSArchetypeRules.NameLocId(archetype));
+        var effect = Loc.GetString(FSArchetypeRules.EffectLocId(archetype),
             FSArchetypeRules.EffectArgs(FSArchetypeRules.Bonus(archetype)));
-        ArchetypeLabel.Text = archetype.Tier == FSArchetypeTier.Keystone
-            ? Loc.GetString("fs-archetype-keystone-line", ("name", name), ("effect", effect))
-            : Loc.GetString("fs-archetype-line", ("name", name), ("effect", effect),
-                ("count", archetype.Count), ("needed", FSArchetypeRules.KeystoneCount));
+        ArchetypeLabel.Text = archetype.Tier == FSArchetypeTier.Archetype
+            ? Loc.GetString("fs-archetype-line", ("name", name), ("effect", effect),
+                ("count", archetype.Count), ("needed", FSArchetypeRules.KeystoneCount))
+            : Loc.GetString("fs-archetype-keystone-line", ("name", name), ("effect", effect));
         ArchetypeLabel.FontColorOverride = FSPerkPalette.Accent[archetype.Category];
     }
 }

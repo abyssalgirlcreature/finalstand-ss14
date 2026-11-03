@@ -2,11 +2,15 @@ using Content.Server._FinalStand.Spawners;
 using Content.Shared._FinalStand.Effects;
 using Content.Server.NPC.Components;
 using Content.Server.NPC.HTN;
+using Content.Shared._FinalStand.Melee;
 using Content.Shared._FinalStand.NPC;
+using Content.Shared._FinalStand.Shop;
+using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.NPC;
 using Robust.Shared.Map;
+using Robust.Shared.Random;
 using Robust.Shared.Timing;
 
 namespace Content.Server._FinalStand.NPC;
@@ -18,6 +22,8 @@ public sealed partial class FSZombieRetaliationSystem : EntitySystem
     [Dependency] private IGameTiming _timing = default!;
     [Dependency] private EntityLookupSystem _lookup = default!;
     [Dependency] private SharedTransformSystem _transform = default!;
+    [Dependency] private SharedHandsSystem _hands = default!;
+    [Dependency] private IRobustRandom _random = default!;
 
     private const float RetaliationDuration = 2f;
     private const float AlertRadius = 10f;
@@ -110,6 +116,8 @@ public sealed partial class FSZombieRetaliationSystem : EntitySystem
             return;
         if (!TryComp<HTNComponent>(uid, out var htn))
             return;
+        if (Inconspicuous(attacker))
+            return;
 
         var bb = htn.Blackboard;
         var curTime = _timing.CurTime;
@@ -143,6 +151,14 @@ public sealed partial class FSZombieRetaliationSystem : EntitySystem
         var pos = _transform.GetMapCoordinates(uid);
         if (_alerts.TryReserve((attacker, pos.MapId, (pos.Position / AlertRadius).Floored()), curTime))
             AlertNearby(uid, attacker);
+    }
+
+    private bool Inconspicuous(EntityUid attacker)
+    {
+        return _hands.TryGetActiveItem(attacker, out var held)
+               && TryComp<FSWeaponUpgradeStateComponent>(held, out var upgrades)
+               && upgrades.Signatures.TryGetValue(FSMeleeSignature.Inconspicuous, out var chance)
+               && _random.Prob(chance);
     }
 
     private bool IsClearlyCloser(EntityUid uid, EntityUid attacker, EntityUid chased)

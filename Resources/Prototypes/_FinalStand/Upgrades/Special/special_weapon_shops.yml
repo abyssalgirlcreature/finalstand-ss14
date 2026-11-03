@@ -339,7 +339,7 @@
     - id: xray-self-charge
       name: fs-upgrade-xray-self-charge
       description: fs-upgrade-xray-self-charge-desc
-      maxLevel: 3
+      maxLevel: 2
       baseCost: 2700
       targetWeaponProtoId: WeaponXrayCannonFS
       requiresResearch: FSOrdnanceXrayCannon

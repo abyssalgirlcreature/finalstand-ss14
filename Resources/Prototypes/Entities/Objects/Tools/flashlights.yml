@@ -9,6 +9,7 @@
     - Flashlight
   - type: HandheldLight
     addPrefix: false
+    wattage: 0 # FINALSTAND: flashlights don't drain their cell
     blinkingBehaviourId: blinking
     radiatingBehaviourId: radiating
   - type: LightBehaviour
@@ -91,7 +92,7 @@
         startingItem: PowerCellMedium
   - type: HandheldLight
     addPrefix: false
-    wattage: 0.5
+    wattage: 0 # FINALSTAND: flashlights don't drain their cell
   - type: ToggleableVisuals
     inhandVisuals:
       left:

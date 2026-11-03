@@ -33,7 +33,10 @@ public sealed partial class FSRevenantGrabPullSystem : EntitySystem
             }
 
             if (TerminatingOrDeleted(grabbed.Puller))
+            {
+                _expired.Add(uid);
                 continue;
+            }
 
             var myPos = _transform.GetMapCoordinates(uid);
             var pullerPos = _transform.GetMapCoordinates(grabbed.Puller);

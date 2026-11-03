@@ -150,7 +150,8 @@ public sealed partial class FSHarvesterWeaponSystem : EntitySystem
     }
 
     // Shares the per-zombie money cap: a third of it can be turned into research per player.
-    private void TryGrantHitResearch(EntityUid? shooter, EntityUid hit, int amount, string source, string? perkId = null)
+    public void TryGrantHitResearch(EntityUid? shooter, EntityUid hit, int amount, string source, string? perkId = null,
+        EntityUid? creditMind = null)
     {
         if (!_enemyQuery.HasComponent(hit)
             || !TryComp<FSMoneyOnHitCapComponent>(hit, out var cap)
@@ -172,7 +173,7 @@ public sealed partial class FSHarvesterWeaponSystem : EntitySystem
             return;
 
         cap.ResearchGivenPerPlayer[mindId] = given + grant;
-        _research.GrantResearchPoints(grant, source, mindId);
+        _research.GrantResearchPoints(grant, source, creditMind ?? mindId);
 
         if (perkId != null && perkBonus > 0)
             _earnings.RecordResearch(mindId, perkId, Math.Min(perkBonus, grant));

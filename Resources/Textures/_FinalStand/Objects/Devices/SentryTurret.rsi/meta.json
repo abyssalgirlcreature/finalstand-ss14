@@ -6,9 +6,25 @@
   "states": [
     { "name": "icon" },
     { "name": "base" },
+    { "name": "base2" },
     { "name": "turret" },
+    { "name": "turret2" },
+    { "name": "turret3" },
+    { "name": "turret4" },
     {
       "name": "fire",
+      "delays": [ [ 0.1, 0.1, 0.1 ] ]
+    },
+    {
+      "name": "fire2",
+      "delays": [ [ 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 ] ]
+    },
+    {
+      "name": "fire3",
+      "delays": [ [ 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 ] ]
+    },
+    {
+      "name": "fire4",
       "delays": [ [ 0.1, 0.1, 0.1 ] ]
     }
   ]

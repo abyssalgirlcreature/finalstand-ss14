@@ -51,6 +51,9 @@ public sealed partial class FSUpgradeSystem : SharedFSUpgradeSystem
         if (!TryComp<SpriteComponent>(ent, out var sprite))
             return;
 
+        var changed = new FSUpgradeVisualsChangedEvent();
+        RaiseLocalEvent(ent.Owner, ref changed);
+
         var grade = Proto.Index(ent.Comp.Grade);
         var target = (ent.Owner, sprite);
         if (TryComp<DoorComponent>(ent, out var door))
@@ -133,3 +136,6 @@ public sealed partial class FSUpgradeSystem : SharedFSUpgradeSystem
             damageVisuals.Divisor = ent.Comp.Max / CrackStages;
     }
 }
+
+[ByRefEvent]
+public readonly record struct FSUpgradeVisualsChangedEvent;

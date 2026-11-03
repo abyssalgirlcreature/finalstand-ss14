@@ -1,3 +1,4 @@
+using Content.Server._FinalStand.Command;
 using Content.Server._FinalStand.Deployables;
 using Content.Server._FinalStand.GameTicking.Rules;
 using Content.Server._FinalStand.Perks;
@@ -20,6 +21,7 @@ namespace Content.Server._FinalStand.Economy;
 public sealed partial class FSMoneyOnHitSystem : EntitySystem
 {
     [Dependency] private FSPlayerWalletSystem _wallet = default!;
+    [Dependency] private FSProfitMarginSystem _profitMargin = default!;
     [Dependency] private SharedMindSystem _mind = default!;
     [Dependency] private SharedHandsSystem _hands = default!;
     [Dependency] private MobThresholdSystem _thresholds = default!;
@@ -120,9 +122,10 @@ public sealed partial class FSMoneyOnHitSystem : EntitySystem
 
         var give = Math.Min(payout, max - alreadyGiven);
         cap.MoneyGivenPerPlayer[mindId] = alreadyGiven + give;
-        _wallet.GiveCredits(mindId, give, FSCreditSource.Hit);
+        var margin = _profitMargin.Multiplier(args.Origin.Value);
+        _wallet.GiveCredits(mindId, (int) MathF.Round(give * margin), FSCreditSource.Hit);
         if (ProfiteerShare(mindId, give) is var share and > 0)
-            _wallet.GiveCredits(mindId, share, FSCreditSource.Perk);
+            _wallet.GiveCredits(mindId, (int) MathF.Round(share * margin), FSCreditSource.Perk);
     }
 
     // What this hit took off the zombie's life: the damage it dealt, minus any past what was left to kill it. A hit on

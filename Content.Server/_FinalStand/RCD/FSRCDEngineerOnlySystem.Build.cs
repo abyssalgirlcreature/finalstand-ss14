@@ -49,7 +49,6 @@ public sealed partial class FSRCDEngineerOnlySystem
     [Dependency] private Content.Shared.Maps.TurfSystem _turf = default!;
     [Dependency] private FSBreachEvaluator _breach = default!;
     [Dependency] private FSCarriedMaterialSystem _materials = default!;
-    [Dependency] private ISharedPlayerManager _player = default!;
     [Dependency] private FSEngineeringResearchSystem _research = default!;
     [Dependency] private FSEngineeringTelemetrySystem _telemetry = default!;
     [Dependency] private FSFlairSystem _flair = default!;
@@ -57,8 +56,6 @@ public sealed partial class FSRCDEngineerOnlySystem
 
     private static readonly ProtoId<FSParticleEmitterPrototype> DustPuff = "FSDustPuff";
 
-    private const float RefundFraction = 0.5f;
-    private const float SalvageRefundFraction = 0.75f;
     private static readonly SoundSpecifier PlacedSound = new SoundPathSpecifier("/Audio/Effects/thunk.ogg", AudioParams.Default.WithVariation(0.1f));
     private const float RapidAssemblyMultiplier = 0.75f;
     private const float ChiefCapMultiplier = 1.5f;
@@ -338,22 +335,7 @@ public sealed partial class FSRCDEngineerOnlySystem
         if (HasComp<FSEmplacementPieceComponent>(target) || HasComp<FSEmplacementComponent>(target))
             return Loc.GetString("fs-emplacement-pack-instead");
 
-        return CanTakeDown(user, target) ? null : Loc.GetString("fs-rcd-not-yours");
-    }
-
-    private bool CanTakeDown(EntityUid user, EntityUid target)
-    {
-        if (!TryComp<FSDeployedByComponent>(target, out var deployedBy)
-            || deployedBy.OwnerMind is not { } owner
-            || _engineering.IsChiefEngineer(user))
-            return true;
-
-        if (_mind.TryGetMind(user, out var mindId, out _) && mindId == owner)
-            return true;
-
-        return !TryComp<MindComponent>(owner, out var ownerMind)
-               || ownerMind.UserId is not { } ownerId
-               || !_player.TryGetSessionById(ownerId, out _);
+        return null;
     }
 
     private List<string> LockedPieces(FSEngineerOnlyRCDComponent comp)
@@ -412,15 +394,15 @@ public sealed partial class FSRCDEngineerOnlySystem
             return null;
 
         var health = 1f;
-        if (_destructible.TryGetDestroyedAt(target, out var destroyedAt) && destroyedAt > 0
+        if (!_research.Has(FSEngineeringNodes.SalvagePlating)
+            && _destructible.TryGetDestroyedAt(target, out var destroyedAt) && destroyedAt > 0
             && TryComp<DamageableComponent>(target, out var damageable))
             health = Math.Clamp(1f - (damageable.TotalDamage / destroyedAt.Value).Float(), 0f, 1f);
 
-        var fraction = _research.Has(FSEngineeringNodes.SalvagePlating) ? SalvageRefundFraction : RefundFraction;
         var refund = new Dictionary<ProtoId<StackPrototype>, int>();
         foreach (var (material, count) in recipe.Materials)
         {
-            var amount = (int) MathF.Floor(count * health * fraction);
+            var amount = (int) MathF.Floor(count * health);
             if (amount > 0)
                 refund[material] = amount;
         }

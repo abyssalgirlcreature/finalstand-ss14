@@ -1,0 +1,9 @@
+- files: ["jackpot.ogg"]
+  license: "CC0-1.0"
+  copyright: "HAM-Koua, trimmed and normalised for Final Stand"
+  source: "https://commons.wikimedia.org/wiki/File:Number_Station-Slot_Machine_Sound_Sample.ogg"
+
+- files: ["pull.ogg"]
+  license: "CC0-1.0"
+  copyright: "Freesound user (original page not recorded)"
+  source: "https://freesound.org/"

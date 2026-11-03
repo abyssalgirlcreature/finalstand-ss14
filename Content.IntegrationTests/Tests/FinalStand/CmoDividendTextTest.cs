@@ -19,10 +19,8 @@ public sealed class CmoDividendTextTest : GameTest
         await Pair.Server.WaitAssertion(() =>
         {
             var text = loc.GetString("fs-cmo-dividend-effects");
-            Assert.That(text, Does.Contain("$" + FSCmoAbilitySystem.DividendFundCost.ToString("N0", CultureInfo.InvariantCulture)),
-                "the Dividend text quotes the wrong cost");
-            Assert.That(text, Does.Contain("$" + FSCmoAbilitySystem.DividendPayout.ToString("N0", CultureInfo.InvariantCulture)),
-                "the Dividend text quotes the wrong payout");
+            Assert.That(text, Does.Contain(FSCmoAbilitySystem.DividendPercent + "%"),
+                "the Dividend text quotes the wrong share");
         });
     }
 }

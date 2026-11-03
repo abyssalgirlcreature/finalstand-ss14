@@ -12,6 +12,12 @@ public sealed class FSSmartReloadMessage : EntityEventArgs
 }
 
 [Serializable, NetSerializable]
+public sealed class FSReloadRequestEvent : EntityEventArgs
+{
+    public NetEntity Gun { get; init; }
+}
+
+[Serializable, NetSerializable]
 public sealed class FSLoadMagazineMessage : EntityEventArgs
 {
     public NetEntity Gun { get; init; }

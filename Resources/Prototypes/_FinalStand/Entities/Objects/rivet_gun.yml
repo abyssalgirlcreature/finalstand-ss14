@@ -9,8 +9,14 @@
     sprite: _FinalStand/Objects/Tools/rivet_gun.rsi
     state: icon
   - type: Item
-    size: Normal
+    size: Small
     sprite: _FinalStand/Objects/Tools/rivet_gun.rsi
+  - type: Clothing
+    sprite: _FinalStand/Objects/Tools/rivet_gun.rsi
+    quickEquip: false
+    slots:
+    - suitStorage
+    - Belt
   - type: Gun
     fireRate: 3
     projectileSpeed: 25
@@ -73,3 +79,22 @@
   - type: Tag
     tags:
     - HideContextMenu
+
+- type: entity
+  parent: FSRivetGun
+  id: FSRivetGunAuto
+  name: automatic rivet gun
+  description: A rivet gun with the governor stripped out. It empties a sheet in a heartbeat and squeezes twice as many rivets from each one.
+  components:
+  - type: Gun
+    fireRate: 6
+    projectileSpeed: 25
+    selectedMode: FullAuto
+    availableModes:
+    - FullAuto
+    soundGunshot:
+      path: /Audio/_FinalStand/Weapons/RivetGun/rivet_shot.ogg
+      params:
+        variation: 0.08
+  - type: FSRivetGun
+    rivetsPerSheet: 12

@@ -61,6 +61,14 @@
       type: MeleeSignature
       signature: Opportunist
       valuePerLevel: 0.5
+    - id: knife-inconspicuous
+      name: fs-upgrade-knife-inconspicuous
+      description: fs-upgrade-knife-inconspicuous-desc
+      maxLevel: 1
+      baseCost: 2500
+      type: MeleeSignature
+      signature: Inconspicuous
+      valuePerLevel: 0.4
   - type: Sprite
     sprite: Objects/Weapons/Melee/survival_knife.rsi
     state: icon

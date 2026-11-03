@@ -17,6 +17,7 @@ namespace Content.Server._FinalStand.Perks;
 public sealed partial class FSPerkMasterySystem : EntitySystem
 {
     [Dependency] private FSPlayerDataStore _store = default!;
+    [Dependency] private FSPlayerWalletSystem _wallet = default!;
     [Dependency] private FSTitleSystem _titles = default!;
     [Dependency] private SharedMindSystem _mind = default!;
     [Dependency] private IPlayerManager _playerManager = default!;
@@ -90,7 +91,8 @@ public sealed partial class FSPerkMasterySystem : EntitySystem
         if (newTier == oldTier)
             return;
 
-        if (_playerManager.TryGetSessionById(user, out var session))
+        _playerManager.TryGetSessionById(user, out var session);
+        if (session != null)
         {
             _chat.DispatchServerMessage(session, Loc.GetString("fs-mastery-tier-up",
                 ("perk", def.Name), ("tier", Loc.GetString(FSPerkMastery.TierLocId(newTier)))));
@@ -98,6 +100,13 @@ public sealed partial class FSPerkMasterySystem : EntitySystem
 
         if (newTier < FSMasteryTier.Gold)
             return;
+
+        if (session != null)
+        {
+            _wallet.GivePerkPoints(session, FSPerkMastery.GoldPerkPoints);
+            _chat.DispatchServerMessage(session, Loc.GetString("fs-mastery-gold-reward",
+                ("points", FSPerkMastery.GoldPerkPoints)));
+        }
 
         _titles.Grant(user, PerkMasterTitle);
 

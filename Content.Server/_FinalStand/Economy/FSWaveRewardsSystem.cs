@@ -25,6 +25,7 @@ public sealed partial class FSWaveRewardsSystem : EntitySystem
     [Dependency] private FSArchetypeSystem _archetypes = default!;
     [Dependency] private FSTitleBuffSystem _titleBuffs = default!;
     [Dependency] private FSStyleSystem _style = default!;
+    [Dependency] private Command.FSProfitMarginSystem _profitMargin = default!;
 
     private readonly List<EntityUid> _assisters = new();
 
@@ -74,7 +75,8 @@ public sealed partial class FSWaveRewardsSystem : EntitySystem
             killerMind = mindId;
             // Style, archetype and title bonuses are the killer's own; assists are a share of the plain value.
             _wallet.GiveCredits(mindId, (int) (killCredits * _style.KillMoneyMultiplier(killer, args.Enemy)
-                * _archetypes.Bonus(mindId).Credits * _titleBuffs.ForMind(mindId).KillCredits), FSCreditSource.Kill);
+                * _archetypes.Bonus(mindId).Credits * _titleBuffs.ForMind(mindId).KillCredits
+                * _profitMargin.Multiplier(killer)), FSCreditSource.Kill);
 
             if (IsSecurity(mindId))
                 _wallet.GiveCredits(mindId, rewards.SecurityKillBonus, FSCreditSource.SecurityBonus);

@@ -12,6 +12,7 @@ public static class FSPerkBonusConstants
     public const float DeathAuraPerStack = 0.02f;       // ranged and melee
     public const float PacifistPenalty = 0.25f;         // flat outgoing-damage penalty, ranged and melee
     public const float LegBreakerStaminaPerLevel = 25f; // stamina damage to the target on crit
+    public const float MechPerkScale = 0.5f;            // how much of a perk's effect carries into a piloted mech
 
     public const float JuggernaughtPerLevel = 0.15f;         // vs. wave-zombie-sourced damage only
     public const float SwordAndShieldResistPerLevel = 0.12f; // while wielding melee, not also a gun
@@ -128,6 +129,10 @@ public static class FSPerkBonusConstants
     public const float KeystoneSpecialistBonus = 1.08f;  // damage and credits
     public const float KeystoneSpecialistDamageTaken = 0.92f;
     public const float KeystoneSpecialistSpeed = 1.05f;
+    public const float PrismDamage = 1.04f;
+    public const float PrismDamageTaken = 0.96f;
+    public const float PrismSpeed = 1.03f;
+    public const float PrismCredits = 1.06f;
 
 
     // Indexed by level - 1. These do not scale linearly, so they are tables rather than a rate.

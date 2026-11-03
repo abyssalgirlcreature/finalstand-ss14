@@ -135,3 +135,6 @@ fs-weapon-shop-category-self-recharging-tesla-cannon = Self-Recharging Tesla Can
 fs-weapon-shop-category-10-rotary-heavy-machine-gun = .10 Rotary Heavy Machine Gun
 fs-weapon-shop-category-sustained-fire-bio-radiation-beam = Sustained-Fire Bio-Radiation Beam
 fs-weapon-shop-category-splash-damage-wonder-weapon = Splash-Damage Wonder Weapon
+fs-weapon-shop-grip-two-handed =   ·  TWO-HANDED
+fs-weapon-shop-grip-wieldable =   ·  WIELDABLE
+fs-weapon-shop-grip-one-handed =   ·  ONE-HANDED

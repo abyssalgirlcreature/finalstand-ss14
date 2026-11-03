@@ -7,6 +7,7 @@ public enum FSArchetypeTier : byte
     None,
     Archetype,
     Keystone,
+    Rainbow,
 }
 
 public readonly record struct FSArchetypeBonus(float Damage, float DamageTaken, float Speed, float Credits)
@@ -23,12 +24,16 @@ public static class FSArchetypeRules
 {
     public const int ArchetypeCount = 3;
     public const int KeystoneCount = 5;
+    public const int RainbowCount = 5;
 
     public static FSArchetype Resolve(IEnumerable<PerkCategory> slotted)
     {
         var counts = new Dictionary<PerkCategory, int>();
         foreach (var category in slotted)
             counts[category] = counts.GetValueOrDefault(category) + 1;
+
+        if (counts.Count == RainbowCount)
+            return new FSArchetype(PerkCategory.Purple, FSArchetypeTier.Rainbow, RainbowCount);
 
         var best = default(FSArchetype);
         foreach (var (category, count) in counts)
@@ -59,6 +64,10 @@ public static class FSArchetypeRules
 
     public static FSArchetypeBonus Bonus(FSArchetype archetype)
     {
+        if (archetype.Tier == FSArchetypeTier.Rainbow)
+            return new FSArchetypeBonus(FSPerkBonusConstants.PrismDamage, FSPerkBonusConstants.PrismDamageTaken,
+                FSPerkBonusConstants.PrismSpeed, FSPerkBonusConstants.PrismCredits);
+
         var keystone = archetype.Tier == FSArchetypeTier.Keystone;
         return archetype.Tier == FSArchetypeTier.None ? FSArchetypeBonus.None : archetype.Category switch
         {
@@ -78,6 +87,12 @@ public static class FSArchetypeRules
             _ => FSArchetypeBonus.None,
         };
     }
+
+    public static string NameLocId(FSArchetype archetype)
+        => archetype.Tier == FSArchetypeTier.Rainbow ? "fs-archetype-prism" : NameLocId(archetype.Category);
+
+    public static string EffectLocId(FSArchetype archetype)
+        => archetype.Tier == FSArchetypeTier.Rainbow ? "fs-archetype-prism-effect" : EffectLocId(archetype.Category);
 
     public static string NameLocId(PerkCategory category) => category switch
     {

@@ -35,6 +35,22 @@ public sealed class FSArchetypeSystemTest
     }
 
     [Test]
+    public void OneOfEveryCategoryIsThePrism()
+    {
+        var perks = new FSPerkLevelsComponent();
+        var slotted = Enum.GetValues<PerkCategory>()
+            .Select(category => FSPerkDef.All.Values.First(d => d.Category == category))
+            .ToArray();
+        for (var i = 0; i < slotted.Length; i++)
+        {
+            perks.Slots[i] = slotted[i].Id;
+            perks.Levels[slotted[i].Id] = 1;
+        }
+
+        Assert.That(FSArchetypeSystem.Get(perks).Tier, Is.EqualTo(FSArchetypeTier.Rainbow));
+    }
+
+    [Test]
     public void ATieGoesToTheLowerCategory()
     {
         var perks = new FSPerkLevelsComponent();

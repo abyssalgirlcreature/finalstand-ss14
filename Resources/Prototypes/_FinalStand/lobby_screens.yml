@@ -1,0 +1,5 @@
+- type: lobbyBackground
+  id: FSBlackHole
+  background: /Textures/_FinalStand/LobbyScreens/blackhole.jpg
+  title: fs-lobby-background-blackhole-title
+  artist: fs-lobby-background-blackhole-artist
