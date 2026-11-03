@@ -15,7 +15,8 @@ public sealed class RiggableTest : InteractionTest
 {
     private static readonly EntProtoId HumanProtoId = "MobHuman";
     private static readonly EntProtoId BatteryProto = "PowerCellSmall";
-    private static readonly EntProtoId FlashlightProto = "EmptyFlashlightLantern";
+    // FINALSTAND: Final Stand flashlights don't drain their cell, so the test brings one that does.
+    private static readonly EntProtoId FlashlightProto = "TestDrainingLantern";
     private static readonly EntProtoId StunbatonProto = "Stunbaton";
 
     [SidedDependency(Side.Server)] private readonly DamageableSystem _damageable = default!;
@@ -31,6 +32,13 @@ public sealed class RiggableTest : InteractionTest
       reagents:
       - ReagentId: Plasma
         Quantity: 15
+
+- type: entity
+  parent: EmptyFlashlightLantern
+  id: TestDrainingLantern
+  components:
+  - type: HandheldLight
+    wattage: 0.5
 
 - type: entity
   parent: PrefilledSyringe
