@@ -19,6 +19,17 @@ public sealed partial class FSArchetypeSystem : EntitySystem
                 counts[(int) def.Category]++;
         }
 
+        // One of every category is the Prism, ahead of any single category.
+        var categories = 0;
+        foreach (var count in counts)
+        {
+            if (count > 0)
+                categories++;
+        }
+
+        if (categories == FSArchetypeRules.RainbowCount)
+            return new FSArchetype(PerkCategory.Purple, FSArchetypeTier.Rainbow, FSArchetypeRules.RainbowCount);
+
         // Ties go to the lowest category, as in the shared rule.
         var best = default(FSArchetype);
         for (var i = 0; i < counts.Length; i++)
