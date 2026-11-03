@@ -1,5 +1,6 @@
 # FINALSTAND: Devastator — chainsaw-wielding berserker that grows faster and stronger as it takes damage.
-# Spawns wave 13+. 800 HP, lifesteal on hit, berserk scaling up to 3.5× speed and 3× damage. 50% armor bypass, stun-resistant.
+# Spawns wave 13+. 1500 HP, lifesteal on hit, berserk scaling up to 2× speed and 4× damage. 50% armor bypass, stun-resistant.
+# Speed capped at 2x: at 3.5x a hurt devastator outran even the fastest player builds.
 - type: entity
   parent: FSZombieFootsoldierBase
   id: FSZombieDevastator
@@ -15,6 +16,7 @@
   - type: FSEnemyIcon
     iconPath: /Textures/_FinalStand/Mobs/ZombieIcons/devastatorzombie.png
   - type: FSDevastator
+    maxSpeedMultiplier: 2
     maxKnockbackResist: 0.9
     maxDamageMultiplier: 4
     lifestealAmount: 30
@@ -28,6 +30,7 @@
   - type: FSStunResist
     durationMultiplier: 0.25
   - type: MeleeWeapon
+    attackRate: 1.5
     altDisarm: false
     angle: 0
     animation: WeaponArcClaw

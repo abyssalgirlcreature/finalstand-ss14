@@ -78,6 +78,6 @@ public sealed partial class FSPerkBodySystem : EntitySystem
         if (packMule != hadPackMule)
             _movement.RefreshMovementSpeedModifiers(body);
 
-        _upgrades.ReconcileHeldMagazines(body);
+        _upgrades.ReconcileHeldGuns(body);
     }
 }

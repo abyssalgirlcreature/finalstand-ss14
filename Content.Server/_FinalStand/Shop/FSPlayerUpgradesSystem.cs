@@ -76,6 +76,8 @@ public sealed partial class FSPlayerUpgradesSystem : EntitySystem
         newState.AttackSpeedMultiplier = oldState.AttackSpeedMultiplier + attackSpeedBonus;
         newState.DualWieldEnergySwordApplied = true;
         Dirty(newSword, newState);
+        if (HasComp<FSIssuedWeaponComponent>(oldSword))
+            EnsureComp<FSIssuedWeaponComponent>(newSword);
 
         // The state is already on the new sword, so the old one always goes, and at once: queued, it kept its bag
         // space from the new sword and a second upgrade this tick could still find it.

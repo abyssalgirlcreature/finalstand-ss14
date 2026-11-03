@@ -126,13 +126,14 @@ public sealed partial class WaveEnemyScalingSystem : EntitySystem
         if (rateMultiplier <= 1f)
             return;
 
+        // Scales the zombie's own tuning (once, at spawn) rather than fixed bases its prototype may not use.
         if (TryComp<FSFlamethrowerComponent>(enemy, out var flamer))
         {
-            flamer.ParticleSpawnRate = 0.08f / rateMultiplier;
-            flamer.AttackCooldown = 4f / rateMultiplier;
+            flamer.ParticleSpawnRate /= rateMultiplier;
+            flamer.AttackCooldown /= rateMultiplier;
         }
 
         if (TryComp<FSTeslaZombieComponent>(enemy, out var tesla))
-            tesla.AttackCooldown = 5f / rateMultiplier;
+            tesla.AttackCooldown /= rateMultiplier;
     }
 }

@@ -51,7 +51,7 @@ public sealed partial class FSResearchPayoutSystem : EntitySystem
             if (!_mind.TryGetMind(mob, out var mindId, out _))
                 continue;
 
-            _wallet.GiveCredits(mindId, payout);
+            _wallet.GiveCredits(mindId, payout, FSCreditSource.Research);
             _popup.PopupEntity(message, mob, mob);
             paid++;
         }

@@ -25,6 +25,9 @@
     flameRange: 8
     fireProjectileSpeed: 14
     fireStacks: 0.3
+    flameDamage:
+      types:
+        Heat: 1
     attackCooldown: 3
     trackingRotationSpeed: 4.5
   - type: MobThresholds

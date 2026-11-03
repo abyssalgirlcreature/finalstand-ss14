@@ -30,13 +30,6 @@
       baseCost: 4750
       type: Damage
       valuePerLevel: 1.45
-    - id: cutlass-plunder
-      name: fs-upgrade-cutlass-plunder
-      description: fs-upgrade-cutlass-plunder-desc
-      maxLevel: 1
-      baseCost: 5000
-      type: MoneyGainPercent
-      valuePerLevel: 0.25
     - id: cutlass-hyper-saber
       name: fs-upgrade-cutlass-hyper-saber
       description: fs-upgrade-cutlass-hyper-saber-desc
@@ -122,15 +115,6 @@
       baseCost: 5000
       type: ExplosiveShot
       valuePerLevel: 1
-      requiresUpgrade: cutlass-pirate
-      targetWeaponProtoId: WeaponPistolFlintlock
-    - id: flintlock-payday
-      name: fs-upgrade-flintlock-payday
-      description: fs-upgrade-flintlock-payday-desc
-      maxLevel: 3
-      baseCost: 2500
-      type: MoneyGainBonus
-      valuePerLevel: 50
       requiresUpgrade: cutlass-pirate
       targetWeaponProtoId: WeaponPistolFlintlock
   - type: Sprite

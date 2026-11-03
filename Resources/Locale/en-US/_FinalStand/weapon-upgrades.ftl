@@ -242,12 +242,6 @@ fs-upgrade-mk58-extended-mag-desc = Adds 1 round to magazine capacity per level.
 fs-upgrade-mk58-steady-aim = Steady Aim
 fs-upgrade-mk58-steady-aim-desc = Reduces max spread by 0.06° per level for precise follow-up shots.
 
-fs-upgrade-mk58-cash-flow = Cash Flow
-fs-upgrade-mk58-cash-flow-desc = Boosts your per-hit earnings. All weapons already earn 30 credits per hit — this adds +2 per level. Max 2 levels: 32/34 per hit.
-
-fs-upgrade-mk58-payday = Payday
-fs-upgrade-mk58-payday-desc = +35 bonus credits per kill with this gun per level.
-
 fs-upgrade-n1984-hair-trigger = Hair Trigger
 fs-upgrade-n1984-hair-trigger-desc = Tuned action increases fire rate by 0.5/level.
 
@@ -411,7 +405,7 @@ fs-upgrade-chainsaw-protective-saw = Protective Saw
 fs-upgrade-chainsaw-protective-saw-desc = While wielded, take 20% less damage.
 
 fs-upgrade-chainsaw-rip-and-tear = Rip and Tear
-fs-upgrade-chainsaw-rip-and-tear-desc = A right click spending 5 or more rev heals you 3 health per zombie it hits, and those kills pay 50% more.
+fs-upgrade-chainsaw-rip-and-tear-desc = A right click spending 5 or more rev heals you 3 health per zombie it hits, and those kills pay 10% more.
 
 fs-upgrade-chainsaw-redline = Redline
 fs-upgrade-chainsaw-redline-desc = Rev builds up to 10 instead of 6.
@@ -424,9 +418,6 @@ fs-upgrade-cutlass-quick-slash-desc = Lighter blade increases attack speed by 20
 
 fs-upgrade-cutlass-sharpened = Sharpened Blade
 fs-upgrade-cutlass-sharpened-desc = Hones the edge for +145% damage per level.
-
-fs-upgrade-cutlass-plunder = Plunder
-fs-upgrade-cutlass-plunder-desc = Pirate's tax: +25% money on each kill.
 
 fs-upgrade-cutlass-hyper-saber = Hyper Saber
 fs-upgrade-cutlass-hyper-saber-desc = Drains 15 stamina per hit.
@@ -457,9 +448,6 @@ fs-upgrade-flintlock-heavier-load-desc = Heavier balls make the flintlock shot h
 
 fs-upgrade-flintlock-explosive-shot = Explosive Shot
 fs-upgrade-flintlock-explosive-shot-desc = The flintlock ball bursts on impact, hurting the zombies around it. A bigger burst each level.
-
-fs-upgrade-flintlock-payday = Payday
-fs-upgrade-flintlock-payday-desc = +50 credits per level for each kill the flintlock makes.
 
 fs-upgrade-esword-quick-slash = Quick Slash
 fs-upgrade-esword-quick-slash-desc = +20% attack speed per level.
@@ -498,7 +486,7 @@ fs-upgrade-fireaxe-axtinguish = Axtinguish
 fs-upgrade-fireaxe-axtinguish-desc = Critical hits against enemies on fire.
 
 fs-upgrade-fireaxe-fireman = Fireman
-fs-upgrade-fireaxe-fireman-desc = Total immunity to fire damage. Flames pass right through you.
+fs-upgrade-fireaxe-fireman-desc = Fire damage reduced by 80%.
 
 fs-upgrade-fireaxe-fire-man = Fire Man
 fs-upgrade-fireaxe-fire-man-desc = While on fire, deal increased damage and heal.
@@ -510,7 +498,7 @@ fs-upgrade-fireaxe-wildfire = Wildfire
 fs-upgrade-fireaxe-wildfire-desc = Burning zombies the axe kills burst into flame, setting zombies within 2 tiles alight.
 
 fs-upgrade-fireaxe-aftershock = Aftershock
-fs-upgrade-fireaxe-aftershock-desc = A fully charged slam strikes again a moment later, half as hard and half again as wide.
+fs-upgrade-fireaxe-aftershock-desc = A fully charged slam strikes again a moment later, half as hard and half again as wide. Each zombie it reaches past the nearest takes 25% less than the one before, down to a quarter.
 
 fs-upgrade-halberd-honed = Honed Edge
 fs-upgrade-halberd-honed-desc = +90% damage per level.
@@ -538,9 +526,6 @@ fs-upgrade-knife-quick-slash-desc = Lighter grip increases attack speed by 33%.
 
 fs-upgrade-knife-sharpened = Sharpened Blade
 fs-upgrade-knife-sharpened-desc = Hones the edge for +50% damage per level (up to x2 total).
-
-fs-upgrade-knife-golden = Golden Blade
-fs-upgrade-knife-golden-desc = Gilded blade pays out +8% money on each kill.
 
 fs-upgrade-knife-bloodthirster = Blood Thirster
 fs-upgrade-knife-bloodthirster-desc = Each hit heals you for 85% of its base damage per level.

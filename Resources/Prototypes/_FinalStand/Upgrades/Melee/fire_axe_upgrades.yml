@@ -36,7 +36,7 @@
       maxLevel: 1
       baseCost: 8000
       type: FireResist
-      valuePerLevel: 1.0
+      valuePerLevel: 0.8
     - id: fireaxe-fire-man
       name: fs-upgrade-fireaxe-fire-man
       description: fs-upgrade-fireaxe-fire-man-desc

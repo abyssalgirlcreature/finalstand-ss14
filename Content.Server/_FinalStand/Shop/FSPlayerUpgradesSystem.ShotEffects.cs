@@ -42,26 +42,6 @@ public sealed partial class FSPlayerUpgradesSystem
                     state.ExplosiveShotLevel = newLevel;
                     break;
                 }
-            case WeaponUpgradeType.MoneyGainBonus:
-                {
-                    state.MoneyGainBonusPerKill += (int)def.ValuePerLevel;
-                    break;
-                }
-            case WeaponUpgradeType.MoneyGainPercent:
-                {
-                    state.MoneyGainPercentPerKill = newLevel * def.ValuePerLevel;
-                    if (def.Id == "knife-golden" && newLevel >= def.MaxLevel)
-                    {
-                        state.KnifeGolden = true;
-                        Dirty(weapon, state);
-                    }
-                    break;
-                }
-            case WeaponUpgradeType.MoneyPerHit:
-                {
-                    state.MoneyPerHitBonus += (int)def.ValuePerLevel;
-                    break;
-                }
             case WeaponUpgradeType.Slowing:
                 {
                     state.SlowingEnabled = true;

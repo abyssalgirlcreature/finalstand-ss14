@@ -189,7 +189,7 @@ public sealed partial class FSWaveObjectiveSystem : EntitySystem
         current.Result = FSWaveObjectiveResult.Completed;
         TearDown(current, completed: true);
         var reward = RewardFor(current);
-        _wallet.DistributeCredits(reward, mindId => _titleBuffs.ForMind(mindId).ObjectiveCredits);
+        _wallet.DistributeCredits(reward, FSCreditSource.Objective, mindId => _titleBuffs.ForMind(mindId).ObjectiveCredits);
         _chat.DispatchServerAnnouncement(Loc.GetString("fs-objective-complete",
             ("name", Loc.GetString(current.Prototype.Name)), ("credits", reward)), AnnounceColor);
         SendState(Filter.Broadcast());

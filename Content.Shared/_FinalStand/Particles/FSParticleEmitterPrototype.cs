@@ -37,7 +37,8 @@ public sealed partial class FSParticleEmitterPrototype : IPrototype
     [DataField]
     public float Direction = 90f;
 
-    // Direction is measured from the attached entity's facing instead of the screen, so 90 is straight ahead.
+    // Direction is measured from the way the attached entity faces (its local south, as mobs and sprites face) instead
+    // of the screen, so 90 is straight ahead.
     [DataField]
     public bool RotateWithEntity;
 

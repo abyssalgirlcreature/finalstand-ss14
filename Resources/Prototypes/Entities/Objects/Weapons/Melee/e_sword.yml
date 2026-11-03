@@ -178,6 +178,11 @@
     - "#1E90FF"
   - type: MeleeWeapon # FINALSTAND: reach zombie claws
     range: 1.8
+  - type: ItemToggleMeleeWeapon # FINALSTAND: twice the base energy blade
+    activatedDamage:
+      types:
+        Slash: 30
+        Heat: 30
   - type: Sprite
     sprite: Objects/Weapons/Melee/e_sword.rsi
     layers:

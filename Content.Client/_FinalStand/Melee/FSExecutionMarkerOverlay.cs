@@ -52,11 +52,13 @@ public sealed partial class FSExecutionMarkerOverlay : Overlay
         var query = _entities.EntityQueryEnumerator<MobStateComponent, TransformComponent>();
         while (query.MoveNext(out var uid, out _, out var xform))
         {
-            if (xform.MapID != args.MapId || !_juice.CanExecute(uid, (weapon, juice)))
+            if (xform.MapID != args.MapId)
                 continue;
 
+            // Cheap culls first: CanExecute reads damage and thresholds, and this runs every frame over every mob.
             var pos = _xform.GetWorldPosition(xform);
-            if ((pos - origin).LengthSquared() > Range * Range || !args.WorldBounds.Contains(pos))
+            if ((pos - origin).LengthSquared() > Range * Range || !args.WorldBounds.Contains(pos)
+                || !_juice.CanExecute(uid, (weapon, juice)))
                 continue;
 
             handle.SetTransform(Matrix3Helpers.CreateTransform(pos, -rotation));

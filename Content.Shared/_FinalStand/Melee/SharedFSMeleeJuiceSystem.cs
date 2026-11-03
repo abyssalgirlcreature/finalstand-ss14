@@ -615,7 +615,7 @@ public abstract partial class SharedFSMeleeJuiceSystem : EntitySystem
             || Timing.CurTime >= sweep.NextSweep;
     }
 
-    private bool WouldKill(EntityUid target, FixedPoint2 damage)
+    protected bool WouldKill(EntityUid target, FixedPoint2 damage)
     {
         return TryComp<DamageableComponent>(target, out var damageable)
             && TryComp<MobThresholdsComponent>(target, out var thresholds)

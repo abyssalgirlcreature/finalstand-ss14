@@ -49,7 +49,8 @@ public sealed partial class FSSlotMachineSystem : EntitySystem
         if (!_mind.TryGetMind(user, out var mindId, out _))
             return;
 
-        if (!_wallet.TryDeductCredits(mindId, stake))
+        var purchase = new FSPurchase(FSPurchaseKind.Gambling, Prototype(ent)?.ID ?? string.Empty);
+        if (!_wallet.TryDeductCredits(mindId, stake, purchase))
         {
             _popup.PopupEntity(Loc.GetString("fs-slots-broke"), ent, user);
             return;
@@ -63,7 +64,7 @@ public sealed partial class FSSlotMachineSystem : EntitySystem
 
         var won = (int) MathF.Round(stake * payout.Multiplier);
         if (won > 0)
-            _wallet.AddCredits(mindId, won);
+            _wallet.AddCredits(mindId, won, FSCreditSource.Gambling);
 
         _popup.PopupEntity(Loc.GetString(payout.Message, ("credits", won)), ent, user, payout.Popup);
 

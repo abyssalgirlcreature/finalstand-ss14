@@ -127,6 +127,7 @@ public sealed partial class FSMeleeJuiceSystem : SharedFSMeleeJuiceSystem
     public override void Shutdown()
     {
         base.Shutdown();
+        _doomed.Clear();
 
         if (_overlay != null)
             _overlays.RemoveOverlay(_overlay);
@@ -136,10 +137,49 @@ public sealed partial class FSMeleeJuiceSystem : SharedFSMeleeJuiceSystem
             _overlays.RemoveOverlay(_executionOverlay);
     }
 
+    // Long enough for the server's word on a kill to arrive from far away.
+    private static readonly TimeSpan DoomedFor = TimeSpan.FromSeconds(1);
+
+    // Mobs this client just landed a killing hit on. Many kills (executions, crits, perks) are worked out on the
+    // server alone, so the mob still looks alive here for a ping and the aim assist would swing at its corpse.
+    private readonly Dictionary<EntityUid, TimeSpan> _doomed = new();
+
+    public bool IsDoomed(EntityUid uid)
+    {
+        if (!_doomed.TryGetValue(uid, out var until))
+            return false;
+
+        if (Timing.CurTime < until)
+            return true;
+
+        _doomed.Remove(uid);
+        return false;
+    }
+
     protected override void OnHit(Entity<FSMeleeJuiceComponent> weapon, EntityUid user, List<EntityUid> targets, Vector2 direction, bool heavy, bool finisher, bool lethal, FSMeleeJuiceProfile profile, MeleeHitEvent args)
     {
         if (!Timing.IsFirstTimePredicted)
             return;
+
+        if (lethal && user == _player.LocalEntity)
+        {
+            if (_doomed.Count > 32)
+            {
+                foreach (var (uid, expires) in _doomed)
+                {
+                    if (Timing.CurTime >= expires)
+                        _doomed.Remove(uid);
+                }
+            }
+
+            var damage = (args.BaseDamage + args.BonusDamage).GetTotal();
+            var until = Timing.CurTime + DoomedFor;
+            for (var i = 0; i < targets.Count; i++)
+            {
+                if (profile.Execution && i == 0 || WouldKill(targets[i], damage))
+                    _doomed[targets[i]] = until;
+            }
+        }
 
         var cue = !heavy && !finisher && weapon.Comp.Finisher != null
             && TryComp<FSMeleeComboComponent>(user, out var combo) && combo.Weapon == weapon.Owner && combo.Hits >= weapon.Comp.ComboHits

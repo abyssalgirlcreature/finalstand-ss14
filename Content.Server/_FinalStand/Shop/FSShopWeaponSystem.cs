@@ -212,7 +212,7 @@ public sealed partial class FSShopWeaponSystem : EntitySystem
             return;
         }
 
-        if (!_wallet.TryDeductCredits(mindId, comp.Price))
+        if (!_wallet.TryDeductCredits(mindId, comp.Price, new FSPurchase(FSPurchaseKind.Weapon, MetaData(uid).EntityPrototype?.ID ?? comp.WeaponProtoId?.Id ?? "?")))
         {
             _popup.PopupEntity(Loc.GetString("shop-weapon-insufficient-funds"), uid, player);
             return;
@@ -307,7 +307,7 @@ public sealed partial class FSShopWeaponSystem : EntitySystem
         var cost = def.LevelCost(currentLevel + 1,
             def.DiscountResearch is { } discountNode && _fsResearch.IsNodeUnlocked(discountNode));
 
-        if (!_wallet.TryDeductCredits(mindId, cost))
+        if (!_wallet.TryDeductCredits(mindId, cost, new FSPurchase(FSPurchaseKind.Upgrade, def.Id, currentLevel + 1)))
         {
             _popup.PopupEntity(Loc.GetString("shop-weapon-insufficient-funds"), uid, player);
             return;
@@ -349,6 +349,8 @@ public sealed partial class FSShopWeaponSystem : EntitySystem
         var converted = Spawn(result, Transform(player).Coordinates);
         var convertedState = EnsureComp<FSWeaponUpgradeStateComponent>(converted);
         _upgrades.CopyUpgradeState(state, convertedState);
+        if (HasComp<FSIssuedWeaponComponent>(weapon))
+            EnsureComp<FSIssuedWeaponComponent>(converted);
         convertedState.Levels[upgradeId] = 1;
         convertedState.TotalSpent = state.TotalSpent + cost;
         Dirty(converted, convertedState);
@@ -447,12 +449,15 @@ public sealed partial class FSShopWeaponSystem : EntitySystem
             return;
         }
 
-        // Sell the least upgraded copy, so a player with two never loses the better one.
+        // Sell the least upgraded copy, so a player with two never loses the better one; between equals, a bought copy
+        // before one from job gear, which pays nothing.
         candidates.Sort((a, b) =>
         {
             var aSum = TryComp<FSWeaponUpgradeStateComponent>(a.Uid, out var as_) ? as_.Levels.Values.Sum() : 0;
             var bSum = TryComp<FSWeaponUpgradeStateComponent>(b.Uid, out var bs_) ? bs_.Levels.Values.Sum() : 0;
-            return aSum.CompareTo(bSum);
+            return aSum != bSum
+                ? aSum.CompareTo(bSum)
+                : HasComp<FSIssuedWeaponComponent>(a.Uid).CompareTo(HasComp<FSIssuedWeaponComponent>(b.Uid));
         });
         var weapon = candidates[0].Uid;
 
@@ -461,11 +466,7 @@ public sealed partial class FSShopWeaponSystem : EntitySystem
 
         var combinedSpent = TryComp<FSWeaponUpgradeStateComponent>(weapon, out var ws) ? ws.TotalSpent : 0;
 
-        var baseRefund    = (int)(comp.Price * 0.40f);
-        var upgradeRefund = (int)(combinedSpent * 0.40f);
-        var totalRefund   = baseRefund + upgradeRefund;
-        totalRefund = (int)(Math.Round(totalRefund / 50.0) * 50);
-        totalRefund = Math.Max(0, totalRefund);
+        var totalRefund = FSSellBack.Refund(HasComp<FSIssuedWeaponComponent>(weapon) ? 0 : comp.Price, combinedSpent);
 
         // Dedup key is the net entity, not the raw EntityUid, which gets recycled.
         _lastSellTime[userId] = now;
@@ -479,7 +480,7 @@ public sealed partial class FSShopWeaponSystem : EntitySystem
 
         QueueDel(weapon);
         CleanupAmmoForWeapon(player, comp, ws);
-        _wallet.AddCredits(mindId, totalRefund);
+        _wallet.AddCredits(mindId, totalRefund, FSCreditSource.Sale);
 
         _popup.PopupEntity(Loc.GetString("fs-weapon-shop-sold-for", ("amount", totalRefund.ToString("N0"))), shopUid, player);
         SendSellResponse(userId, success: true, "");

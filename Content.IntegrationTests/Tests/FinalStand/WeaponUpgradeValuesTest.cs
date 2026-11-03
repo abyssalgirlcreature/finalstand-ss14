@@ -14,8 +14,6 @@ public sealed class WeaponUpgradeValuesTest : GameTest
     // Applied with an (int) cast.
     private static readonly HashSet<WeaponUpgradeType> WholeNumberTypes =
     [
-        WeaponUpgradeType.MoneyGainBonus,
-        WeaponUpgradeType.MoneyPerHit,
         WeaponUpgradeType.Radius,
         WeaponUpgradeType.MagazineSize,
         WeaponUpgradeType.PelletCount,
@@ -32,7 +30,8 @@ public sealed class WeaponUpgradeValuesTest : GameTest
     // A share of something, so at most all of it once fully upgraded.
     private static readonly HashSet<WeaponUpgradeType> FractionTypes =
     [
-        WeaponUpgradeType.MoneyGainPercent,
+        WeaponUpgradeType.FireResist,
+        WeaponUpgradeType.WielderResistance,
     ];
 
     // A share per level that may stack past the whole (Blood Thirster heals 170% at level 2), but one level is never

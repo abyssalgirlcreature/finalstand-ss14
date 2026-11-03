@@ -78,7 +78,7 @@ public sealed partial class FSScavengerSystem : EntitySystem
             default:
                 if (_mind.TryGetMind(user, out var mindId, out _))
                 {
-                    _wallet.GiveCredits(mindId, FSPerkBonusConstants.ScavengerCredits);
+                    _wallet.GiveCredits(mindId, FSPerkBonusConstants.ScavengerCredits, FSCreditSource.Perk);
                     _earnings.RecordCredits(mindId, "Scavenger", FSPerkBonusConstants.ScavengerCredits);
                 }
                 (message, color) = ("fs-scavenger-credits", CreditsColor);

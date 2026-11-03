@@ -324,14 +324,14 @@
       name: fs-upgrade-harvester-damage
       description: fs-upgrade-harvester-damage-desc
       maxLevel: 5
-      baseCost: 12000
+      baseCost: 2950
       type: Damage
       valuePerLevel: 0.15
     - id: harvester-xray-conversion
       name: fs-upgrade-harvester-xray-conversion
       description: fs-upgrade-harvester-xray-conversion-desc
       maxLevel: 1
-      baseCost: 60000
+      baseCost: 14700
       targetWeaponProtoId: WeaponHarvesterFS
       type: ConvertWeapon
       spawnProtoId: WeaponXrayCannonFS
@@ -340,7 +340,7 @@
       name: fs-upgrade-xray-self-charge
       description: fs-upgrade-xray-self-charge-desc
       maxLevel: 2
-      baseCost: 11000
+      baseCost: 2700
       targetWeaponProtoId: WeaponXrayCannonFS
       requiresResearch: FSOrdnanceXrayCannon
       type: SelfChargeSpeed
@@ -349,7 +349,7 @@
       name: fs-upgrade-xray-fire-rate
       description: fs-upgrade-xray-fire-rate-desc
       maxLevel: 3
-      baseCost: 11000
+      baseCost: 2700
       targetWeaponProtoId: WeaponXrayCannonFS
       requiresResearch: FSOrdnanceXrayCannon
       type: FireRate
@@ -358,7 +358,7 @@
       name: fs-upgrade-xray-damage
       description: fs-upgrade-xray-damage-desc
       maxLevel: 4
-      baseCost: 12000
+      baseCost: 2950
       targetWeaponProtoId: WeaponXrayCannonFS
       requiresResearch: FSOrdnanceXrayCannon
       type: Damage
@@ -367,7 +367,7 @@
       name: fs-upgrade-xray-pierce
       description: fs-upgrade-xray-pierce-desc
       maxLevel: 10
-      baseCost: 13000
+      baseCost: 3200
       targetWeaponProtoId: WeaponXrayCannonFS
       requiresResearch: FSOrdnanceXrayCannon
       type: Pierce
@@ -376,7 +376,7 @@
       name: fs-upgrade-xray-dot
       description: fs-upgrade-xray-dot-desc
       maxLevel: 3
-      baseCost: 16000
+      baseCost: 3900
       targetWeaponProtoId: WeaponXrayCannonFS
       requiresResearch: FSOrdnanceXrayCannon
       type: RadiationCoating

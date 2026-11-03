@@ -169,6 +169,9 @@
   - type: Physics
     bodyType: Dynamic
     canCollide: true
+  # Like a bullet: the floor's friction stopped bolts dead on whoever they were fired at.
+  - type: TileFrictionModifier
+    modifier: 0
   - type: Fixtures
     fixtures:
       fix1:

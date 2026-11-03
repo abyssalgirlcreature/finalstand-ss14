@@ -42,7 +42,7 @@ public sealed partial class FSInvestorSystem : EntitySystem
             var total = investorAmount + fundAmount;
             if (total <= 0) continue;
 
-            _wallet.GiveCredits(mindId, total);
+            _wallet.GiveCredits(mindId, total, FSCreditSource.Perk);
             _earnings.RecordCredits(mindId, "Investor", investorAmount);
             _earnings.RecordCredits(mindId, "MutualFund", fundAmount);
         }

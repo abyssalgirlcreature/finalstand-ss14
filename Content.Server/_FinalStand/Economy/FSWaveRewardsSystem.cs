@@ -76,10 +76,10 @@ public sealed partial class FSWaveRewardsSystem : EntitySystem
             // Style, archetype and title bonuses are the killer's own; assists are a share of the plain value.
             _wallet.GiveCredits(mindId, (int) (killCredits * _style.KillMoneyMultiplier(killer, args.Enemy)
                 * _archetypes.Bonus(mindId).Credits * _titleBuffs.ForMind(mindId).KillCredits
-                * _profitMargin.Multiplier(killer)));
+                * _profitMargin.Multiplier(killer)), FSCreditSource.Kill);
 
             if (IsSecurity(mindId))
-                _wallet.GiveCredits(mindId, rewards.SecurityKillBonus);
+                _wallet.GiveCredits(mindId, rewards.SecurityKillBonus, FSCreditSource.SecurityBonus);
         }
 
         if (!TryComp<FSEnemyDamageTrackerComponent>(args.Enemy, out var tracker))
@@ -90,7 +90,7 @@ public sealed partial class FSWaveRewardsSystem : EntitySystem
         foreach (var assister in _assisters)
         {
             if (_mind.TryGetMind(assister, out var assistMind, out _) && assistMind != killerMind)
-                _wallet.GiveCredits(assistMind, assistCredits);
+                _wallet.GiveCredits(assistMind, assistCredits, FSCreditSource.Assist);
         }
     }
 
@@ -99,7 +99,7 @@ public sealed partial class FSWaveRewardsSystem : EntitySystem
         if (!TryGetRewards(out var rewards))
             return;
 
-        PayCrew(rewards, rewards.ClearBase + rewards.ClearPerWave * args.WaveNumber);
+        PayCrew(rewards, rewards.ClearBase + rewards.ClearPerWave * args.WaveNumber, FSCreditSource.WaveClear);
     }
 
     private void OnPrepSkipped(ref WavePrepSkippedEvent args)
@@ -111,7 +111,7 @@ public sealed partial class FSWaveRewardsSystem : EntitySystem
         if (bonus <= 0)
             return;
 
-        PayCrew(rewards, bonus);
+        PayCrew(rewards, bonus, FSCreditSource.PrepSkip);
         _chatManager.DispatchServerAnnouncement(Loc.GetString("fs-prep-skip-bonus", ("credits", bonus)), PrepSkipColor);
     }
 
@@ -128,12 +128,12 @@ public sealed partial class FSWaveRewardsSystem : EntitySystem
         var wavesMissed = _waveRule.GetWaveNumber() - 1;
         var catchUp = rewards.CrewPaidSoFar + rewards.CatchUpPerWave * Math.Max(0, wavesMissed);
         if (catchUp > 0)
-            _wallet.GiveCredits(mindId, catchUp);
+            _wallet.GiveCredits(mindId, catchUp, FSCreditSource.CatchUp);
     }
 
-    private void PayCrew(FSWaveRewardsComponent rewards, int amount)
+    private void PayCrew(FSWaveRewardsComponent rewards, int amount, FSCreditSource source)
     {
-        _wallet.DistributeCredits(amount);
+        _wallet.DistributeCredits(amount, source);
         rewards.CrewPaidSoFar += amount;
     }
 

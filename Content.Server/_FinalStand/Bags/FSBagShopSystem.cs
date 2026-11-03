@@ -42,7 +42,7 @@ public sealed partial class FSBagShopSystem : EntitySystem
         if (entry == null)
             return;
 
-        if (!_wallet.TryDeductCredits(mindId, entry.Price))
+        if (!_wallet.TryDeductCredits(mindId, entry.Price, new FSPurchase(FSPurchaseKind.Bag, entry.Proto)))
         {
             _popup.PopupEntity(Loc.GetString("shop-weapon-insufficient-funds"), uid, player);
             return;

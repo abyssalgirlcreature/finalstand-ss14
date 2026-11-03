@@ -113,7 +113,7 @@ public sealed partial class FSChemCreditSystem : EntitySystem
         if (cut <= 0)
             return;
 
-        _wallet.GiveCredits(claim.SupplierMind, cut);
+        _wallet.GiveCredits(claim.SupplierMind, cut, FSCreditSource.Medical);
         _medFund.GrantMedicalFunds(
             cut * FSMedicalPayoutRates.SupplierFundPerPoint / FSMedicalPayoutRates.SupplierCreditsPerPoint,
             "chem-buff", claim.SupplierMind);

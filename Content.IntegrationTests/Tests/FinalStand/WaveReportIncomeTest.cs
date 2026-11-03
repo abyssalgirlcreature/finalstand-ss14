@@ -40,8 +40,8 @@ public sealed class WaveReportIncomeTest : GameTest
             var earner = minds.CreateMind(null, "earner").Owner;
             var receiver = minds.CreateMind(null, "receiver").Owner;
 
-            wallets.GiveCredits(earner, 100);
-            wallets.AddCredits(receiver, 100);
+            wallets.GiveCredits(earner, 100, FSCreditSource.Kill);
+            wallets.AddCredits(receiver, 100, FSCreditSource.Transfer);
 
             Assert.That(earned.GetValueOrDefault(earner), Is.EqualTo(100), "a kill payout didn't count as earned");
             Assert.That(earned.GetValueOrDefault(receiver), Is.Zero, "a refund or transfer counted as earned");
@@ -66,7 +66,7 @@ public sealed class WaveReportIncomeTest : GameTest
 
             var sender = SpawnPlayer(entMan, minds, map.GridCoords, Pair.Player!.UserId, out var senderMind);
             var receiver = SpawnPlayer(entMan, minds, map.GridCoords, null, out var receiverMind);
-            wallets.AddCredits(senderMind, 1000);
+            wallets.AddCredits(senderMind, 1000, FSCreditSource.Admin);
             entMan.EnsureComponent<FSPlayerWalletComponent>(receiverMind);
 
             var session = entMan.SpawnEntity("FSCashTransferSession", map.GridCoords);
