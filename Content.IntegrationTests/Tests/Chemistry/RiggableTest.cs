@@ -15,8 +15,9 @@ public sealed class RiggableTest : InteractionTest
 {
     private static readonly EntProtoId HumanProtoId = "MobHuman";
     private static readonly EntProtoId BatteryProto = "PowerCellSmall";
-    // FINALSTAND: Final Stand flashlights don't drain their cell, so the test brings one that does.
-    private static readonly EntProtoId FlashlightProto = "TestDrainingLantern";
+    // FINALSTAND: Final Stand flashlights don't drain their cell, so the test brings one that does. A plain string:
+    // the YAML linter checks static EntProtoIds against real prototypes, and this one only exists in the test.
+    private const string FlashlightProto = "TestDrainingLantern";
     private static readonly EntProtoId StunbatonProto = "Stunbaton";
 
     [SidedDependency(Side.Server)] private readonly DamageableSystem _damageable = default!;
