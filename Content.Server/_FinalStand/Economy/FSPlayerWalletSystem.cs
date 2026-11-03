@@ -79,6 +79,7 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
             wallet.PerkPoints = 0;
             wallet.Loaded = false;
         }
+        ResetBalanceMetrics();
         Log.Debug("Round restart — saved all players, cleared credits.");
     }
 
@@ -106,7 +107,10 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
 
         var wallet = GetLoadedWallet(mindId, player.UserId);
         if (_startingCreditsGiven.Add(player.UserId))
+        {
             wallet.Credits += StartingCredits;
+            RecordCredits(mindId, StartingCredits, KindStarting, SourceStarting);
+        }
 
         MarkWalletDirty(mindId);
     }
@@ -175,8 +179,10 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
                 continue;
 
             var wallet = GetLoadedWallet(mindId, session.UserId);
-            wallet.Credits += (int) MathF.Round(amount * scale(mindId));
+            var given = (int) MathF.Round(amount * scale(mindId));
+            wallet.Credits += given;
             MarkWalletDirty(mindId);
+            RecordCredits(mindId, given, given >= 0 ? KindTeamPayout : KindRemoved, source.ToString());
             count++;
         }
         Log.Debug($"DistributeCredits +{amount} → {count} player(s)");
@@ -224,7 +230,7 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
     // Earnings: kills, payouts, perks. These count towards the wave report's EARNED.
     public void GiveCredits(EntityUid mindId, int amount, FSCreditSource source)
     {
-        AddCredits(mindId, amount, source);
+        ChangeCredits(mindId, amount, amount >= 0 ? KindEarned : KindRemoved, source);
         if (amount <= 0)
             return;
 
@@ -235,9 +241,15 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
     // Credits that aren't earnings: refunds, sell-backs and transfers between players.
     public void AddCredits(EntityUid mindId, int amount, FSCreditSource source)
     {
+        ChangeCredits(mindId, amount, amount >= 0 ? KindAdded : KindRemoved, source);
+    }
+
+    private void ChangeCredits(EntityUid mindId, int amount, string kind, FSCreditSource source)
+    {
         var wallet = GetWallet(mindId);
         wallet.Credits += amount;
         MarkWalletDirty(mindId);
+        RecordCredits(mindId, amount, kind, source.ToString());
     }
 
     // Pass spending: false for credits that move to another player rather than buying something.
@@ -248,6 +260,7 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
             return false;
         wallet.Credits -= amount;
         MarkWalletDirty(mindId);
+        RecordCredits(mindId, amount, spending ? KindSpent : KindTransferOut, purchase.Kind.ToString());
         if (spending && amount > 0)
             RaiseSpent(mindId, amount);
         return true;
@@ -265,6 +278,7 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
 
         wallet.Credits -= taken;
         MarkWalletDirty(mindId);
+        RecordCredits(mindId, taken, KindSpent, purchase.Kind.ToString());
         RaiseSpent(mindId, taken);
         return taken;
     }
@@ -347,7 +361,7 @@ public sealed partial class FSPlayerWalletSystem : EntitySystem
             wallet.PerkPoints = 0;
             wallet.Credits = StartingCredits;
             MarkWalletDirty(mindId);
-
+            PublishBalance(mindId);
         }
 
         var wiped = new FSPrestigeWipedEvent();
